@@ -1,29 +1,23 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import CustomButton from "./components/CustomButton";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const logo = require("../assets/images/adria.jpg");
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text
-        style={{
-          fontSize: 26,
-          fontFamily: "Poppins-Bold",
-        }}
-      >
-        Open up App.tsx to start working on your app!
-      </Text>
-      <Text>fDSADFDSF sdasd GHJG</Text>
-      <Text>LIVE</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView className="bg-white h-full">
+      <ScrollView>
+        <View className="w-full justify-center min-h-[85vh] px-4 my-6">
+          <Image source={logo} />
+          <Text className="text-3xl text-red-500">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet
+            quaerat odio reiciendis voluptatem similique non eius voluptatum
+            minus harum accusantium!
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
