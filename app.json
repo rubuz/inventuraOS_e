@@ -1,6 +1,7 @@
 {
   "expo": {
-    "name": "inventuraOS_e",
+    "name": "InventuraOS",
+    "scheme": "inventuraOS",
     "slug": "inventuraOS_e",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -22,6 +23,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": ["expo-router"]
   }
 }
