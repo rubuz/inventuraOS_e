@@ -40,20 +40,20 @@ export default function App() {
             title="Uporabnik"
             value={form.user}
             handleChangeText={(e: string) => setFrom({ ...form, user: e })}
-            otherStyles="mt-7"
             placeholder="Uporabniško ime"
+            otherStyles="mt-4"
           />
           <FormField
             title="Geslo"
             placeholder="Geslo"
             value={form.password}
+            otherStyles="mt-4"
             handleChangeText={(e: string) => setFrom({ ...form, password: e })}
-            otherStyles="mt-7"
           />
           <CustomButton
             title="Vpiši se"
             handlePress={submit}
-            containerStyles="w-full mt-7"
+            containerStyles="w-full mt-4"
             isLoading={isSubmiting}
           />
         </View>
