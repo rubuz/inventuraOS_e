@@ -18,6 +18,12 @@ export default function App() {
     password: "",
   });
 
+  const [isSubmiting, setIsSubmitting] = useState<boolean>(false);
+
+  const submit = () => {
+    console.log(form);
+  };
+
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
@@ -30,7 +36,6 @@ export default function App() {
           <Text className="text-2xl font-psemibold mt-5 text-center">
             Invetura OS
           </Text>
-
           <FormField
             title="Uporabnik"
             value={form.user}
@@ -44,6 +49,12 @@ export default function App() {
             value={form.password}
             handleChangeText={(e: string) => setFrom({ ...form, password: e })}
             otherStyles="mt-7"
+          />
+          <CustomButton
+            title="Vpiši se"
+            handlePress={submit}
+            containerStyles="w-full mt-7"
+            isLoading={isSubmiting}
           />
         </View>
       </ScrollView>
