@@ -4,16 +4,11 @@ import CustomButton from "./components/CustomButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "./components/FormField";
 import { useState } from "react";
-import { API_URL_LOGIN, API_LOGIN_HEADER } from "@env";
-import axios from "axios";
-import { login } from "../api/authService";
+import { login } from "../api/apiService";
+import { router } from "expo-router";
+import { Form, LoginResponse } from "../types/types";
 
 const logo = require("../assets/images/adria.jpg");
-
-type Form = {
-  user: string;
-  password: string;
-};
 
 export default function App() {
   const [form, setForm] = useState<Form>({
@@ -27,12 +22,27 @@ export default function App() {
     setIsSubmitting(true);
     setLoginError("");
     try {
-      const data = await login({ user: form.user, password: form.password });
+      const data: LoginResponse = await login({
+        user: form.user,
+        password: form.password,
+      });
       if (data.result === null) {
-        setLoginError(data.error.text);
+        console.error(data.error.text);
         console.log("FAKIN FAIL");
       } else {
-        console.log("Login successful", data.result);
+        const resultArray = data.result;
+        const hasCfaminventura = resultArray.some(
+          (item) => item.app_displayname === "cfaminventura"
+        );
+        if (!hasCfaminventura) {
+          setLoginError("User does not have access to cfaminventura");
+          console.error("User does not have access to cfaminventura");
+          return;
+        } else {
+          console.log("Login successful", data.result);
+          console.log("Login successful", data.result[0].displayname);
+          router.push("/home");
+        }
       }
     } catch (error) {
       setLoginError("An error occurred during login");
