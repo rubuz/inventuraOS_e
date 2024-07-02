@@ -31,7 +31,7 @@ export default function home() {
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full min-h-[85vh] justify-center items-center px-4 my-6">
+        <View className="w-full min-h-[85vh] justify-center px-4 my-6">
           <Text className="text-2xl font-psemibold mt-5 text-center">
             Invetura OS
           </Text>
@@ -41,7 +41,11 @@ export default function home() {
             onChangeText={(e) => setNumberOS(Number(e))}
             onSubmitEditing={() => handleGetLastnik()}
           />
-          <Text>LASTNIK-test: {dataOS?.ime}</Text>
+          <Text>LASTNIK: {dataOS?.osstanje_ime}</Text>
+          <Text>SIFRA: {dataOS?.sifra}</Text>
+          <Text>LASTNIK: {dataOS?.ime}</Text>
+          <Text>LOKACIJA: {dataOS?.lokacija}</Text>
+          {dataOS?.popisan === "D" && <Text>POPISAN!</Text>}
         </View>
       </ScrollView>
     </SafeAreaView>
