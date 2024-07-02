@@ -41,7 +41,7 @@ export default function home() {
             onChangeText={(e) => setNumberOS(Number(e))}
             onSubmitEditing={() => handleGetLastnik()}
           />
-          <Text>LASTNIKs: {dataOS?.ime}</Text>
+          <Text>LASTNIK: {dataOS?.ime}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
