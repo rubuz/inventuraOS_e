@@ -3,7 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomButton from "./components/CustomButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "./components/FormField";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { login } from "../api/apiService";
 import { router } from "expo-router";
 import { Form, LoginResponse } from "../types/types";
@@ -51,6 +51,16 @@ export default function App() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Place your action here. For example:
+      router.push("/home");
+      // Or any other logic you want to execute after 2 seconds
+    }, 500);
+
+    return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  }, []);
 
   // const login = async (user, password) => {
   //   setIsSubmitting(true);
