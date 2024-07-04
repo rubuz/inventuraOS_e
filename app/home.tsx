@@ -53,7 +53,7 @@ export default function home() {
           </Text>
           <View className="w-full h-16 px-4 pl-6 mt-6 bg-white border-2 border-slate-600 rounded-2xl focus:border-blue-700 flex-row items-center">
             <TextInput
-              className="text-2xl text-center w-full flex-col h-full items-center justify-center font-pbold"
+              className="text-2xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
               keyboardType="numeric"
               placeholder="Številka OS"
               onChangeText={(e) => setNumberOS(Number(e))}

@@ -24,7 +24,7 @@ const DetailCard = ({
         popisanoColor ? "bg-green-200" : "bg-red-200"
       }`}
     >
-      <Text className="text-lg font-pmedium">{dataOS?.osstanje_ime}</Text>
+      <Text className="text-lg font-pmedium mb-4">{dataOS?.osstanje_ime}</Text>
       <Text className="text-sm font-psemibold">Lastnik</Text>
       <View className="w-full flex flex-row justify-between">
         <Text className="font-pregular text-lg">{dataOS?.ime}</Text>
@@ -68,11 +68,11 @@ const DetailCard = ({
         </View>
       </View>
       {dataOS?.popisan === "D" ? (
-        <Text className="text-base font-pbold text-green-700 text-center mt-4">
+        <Text className="text-base font-pbold text-green-700 text-center mt-4 tracking-wider">
           POPISANO
         </Text>
       ) : (
-        <Text className="text-base font-pbold text-red-700 text-center mt-2">
+        <Text className="text-base font-pbold text-red-700 text-center mt-4 tracking-wider">
           NEPOPISANO
         </Text>
       )}
