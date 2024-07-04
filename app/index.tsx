@@ -161,7 +161,7 @@ export default function App() {
           <CustomButton
             title="Vpiši se"
             handlePress={handleLogin}
-            containerStyles="w-full mt-4"
+            containerStyles="w-full mt-4 bg-[#002d5f]"
             isLoading={isSubmiting}
           />
         </View>

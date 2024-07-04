@@ -7,6 +7,7 @@ interface CustomButtonProps {
   containerStyles?: string;
   textStyles?: string;
   isLoading?: boolean;
+  disable?: boolean;
 }
 
 const CustomButton = ({
@@ -15,15 +16,16 @@ const CustomButton = ({
   containerStyles,
   textStyles,
   isLoading,
+  disable,
 }: CustomButtonProps) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      className={`bg-[#002d5f] rounded-2xl min-h-[64px] flex flex-row justify-center items-center ${containerStyles} ${
-        isLoading ? "opacity-50" : ""
+      className={`rounded-2xl min-h-[64px] flex flex-row justify-center items-center ${containerStyles} ${
+        isLoading || disable ? "opacity-50" : ""
       }`}
-      disabled={isLoading}
+      disabled={isLoading || disable}
     >
       <Text className={`text-white font-psemibold text-lg ${textStyles}`}>
         {title}
