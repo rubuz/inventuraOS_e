@@ -5,7 +5,7 @@ const chevronLeft = require("../../assets/images/chevron-left.png");
 
 interface DetailCardProps {
   dataOS: LastnikOSResult | null;
-  novaLokacija: string;
+  novaLokacija: string | null;
   popisanoColor: boolean;
   handleNovaLokacija: (e: string) => void;
   handleCopy: () => void;
@@ -32,7 +32,7 @@ const DetailCard = ({
       </View>
       <Text className="text-sm mt-2 font-psemibold">Lokacija</Text>
       <View className="w-full flex flex-row justify-between">
-        <Text className="font-pregular text-lg">{dataOS?.lokacija}</Text>
+        <Text className="font-pregular text-lg">{dataOS?.lokacija_inv}</Text>
         <Text>{dataOS?.obrat_ime}</Text>
       </View>
       <View className="mt-2 w-full relative">
@@ -49,7 +49,7 @@ const DetailCard = ({
           <TextInput
             className="font-pregular flex h-full w-full items-center"
             keyboardType="numeric"
-            value={novaLokacija}
+            value={novaLokacija !== null ? novaLokacija : ""}
             onChangeText={handleNovaLokacija}
           />
           <TouchableOpacity
