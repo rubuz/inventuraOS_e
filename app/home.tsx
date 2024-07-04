@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { getOSinfo } from "../api/apiService";
-import { LastnikOSResponse, LastnikOSResult } from "../types/types";
+import { LastnikOSResponse, LastnikOSResult, sendParams } from "../types/types";
 import DetailCard from "./components/DetailCard";
 import CustomButton from "./components/CustomButton";
 
@@ -20,6 +20,7 @@ export default function home() {
   const [numberOS, setNumberOS] = useState<number>(0);
   const [dataOS, setDataOS] = useState<LastnikOSResult | null>(null);
   const [novaLokacija, setNovaLokacija] = useState<string>("0");
+  const [sendParams, setSendParams] = useState<sendParams | null>(null);
 
   useEffect(() => {
     if (dataOS !== null) {
@@ -47,7 +48,7 @@ export default function home() {
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full min-h-[85vh] justify-center px-4 my-6 font-pregular">
+        <View className="w-full min-h-[85vh] justify-start px-4 my-6 font-pregular">
           <Text className="text-2xl font-psemibold mt-5 text-center">
             Inventura OS
           </Text>
@@ -73,6 +74,10 @@ export default function home() {
             containerStyles="bg-[#002d5f]"
             disable={novaLokacija === "0" ? true : false}
           />
+
+          <TouchableOpacity className="m-4 p-4 bg-yellow-400">
+            <Text>Nazivi</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

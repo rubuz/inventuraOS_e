@@ -37,3 +37,10 @@ export interface LastnikOSResponse {
   error: Error;
   result: LastnikOSResult | null;
 }
+
+export interface sendParams {
+  stev: number;
+  lokacija: number;
+  stev_old: number;
+  naziv: string;
+}
