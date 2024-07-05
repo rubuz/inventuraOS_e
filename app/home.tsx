@@ -69,7 +69,7 @@ export default function home() {
   };
 
   const handleCopyStaro = () => {
-    setNovaLokacija(String(dataOS?.lokacija));
+    setNovaLokacija(String(dataOS?.lokacija_inv));
   };
 
   return (
@@ -91,8 +91,8 @@ export default function home() {
           {dataOS ? (
             dataOS.osstanje_ime === null ? (
               <>
-                <Text>Osnovno sredstvo nima naziba</Text>
-                <View className="w-full h-14 rounded-2xl border-2 font-pregular flex-col items-center justify-center">
+                <Text>Osnovno sredstvo nima naziva</Text>
+                <View className="w-full h-14 rounded-2xl border-2 font-pregular flex-col items-center justify-center bg-red-200">
                   <Picker
                     selectedValue={newNaziv}
                     onValueChange={(itemValue, itemIndex) =>
