@@ -47,3 +47,9 @@ export interface sendParams {
   stev_old: number;
   naziv: string;
 }
+
+type NazivItem = {
+  naziv: string;
+};
+
+export type NaziviResponse = NazivItem[];
