@@ -27,10 +27,13 @@ export interface LastnikOSResult {
   ime: string;
   lokacija: number;
   lokacija_inv: number;
+  naziv_inv: string;
   obrat_ime: string;
   osstanje_ime: string;
   popisan: string;
   sifra: number;
+  stev_old: number;
+  stev_old_naziv: string;
 }
 
 export interface LastnikOSResponse {
