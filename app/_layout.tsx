@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import React, { useEffect } from "react";
 import { Slot, SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
+import Toast from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync();
 

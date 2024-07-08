@@ -45,5 +45,19 @@ export interface sendParams {
   stev: number;
   lokacija: number;
   stev_old: number;
+  naziv_inv: string;
+}
+
+type NazivItem = {
   naziv: string;
+};
+
+export type NaziviResponse = NazivItem[];
+
+type ToastType = "success" | "info" | "error";
+
+export interface ShowToastParams {
+  type: ToastType;
+  text1: string;
+  text2?: string;
 }
