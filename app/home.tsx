@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getNazivi, getOSinfo } from "../api/apiService";
 import { LastnikOSResponse, LastnikOSResult, sendParams } from "../types/types";
 import DetailCard from "./components/DetailCard";
+import Toast from "react-native-toast-message";
 
 type NazivItem = {
   naziv: string;
@@ -37,31 +38,39 @@ export default function home() {
       }
     } catch (error) {
       console.error("Login error", error);
+      1;
     }
   };
 
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full min-h-[85vh] justify-start px-4 my-6 font-pregular">
+        <View className="w-full min-h-[85vh] justify-start px-4 my-8188 font-pregular">
           <Text className="text-2xl font-psemibold mt-5 text-center">
             Inventura OS
           </Text>
-          <View className="w-full h-16 px-4 pl-6 mt-6 bg-white border-2 border-slate-400 rounded-2xl focus:border-[#002d5f] flex-row items-center">
-            <TextInput
-              className="text-2xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
-              keyboardType="numeric"
-              placeholder="Številka OS"
-              onChangeText={(e) => setNumberOS(Number(e))}
-              onSubmitEditing={() => handleGetLastnik()}
-            />
+          <View className="relative">
+            <Text className="text-base text-black font-pmedium text-center bg-white top-3 px-2 ">
+              Številka osnovnega sredstva
+            </Text>
+            <View className="w-full h-16 px-4 pl-6 mt-4 bg-white border-2 border-slate-400 rounded-2xl focus:border-[#002d5f] flex-row items-center">
+              <TextInput
+                className="text-3xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
+                keyboardType="numeric"
+                autoFocus={true}
+                onChangeText={(e) => setNumberOS(Number(e))}
+                onSubmitEditing={() => handleGetLastnik()}
+              />
+            </View>
           </View>
+
           {dataOS ? (
             dataOS.osstanje_ime === null ? (
               <>
                 <DetailCard
                   isNaziv={false}
                   dataOS={dataOS}
+                  numberOS={numberOS}
                   popisanoColor={dataOS?.popisan === "D" ? true : false}
                 />
               </>
@@ -70,6 +79,7 @@ export default function home() {
                 <DetailCard
                   isNaziv={true}
                   dataOS={dataOS}
+                  numberOS={numberOS}
                   popisanoColor={dataOS?.popisan === "D" ? true : false}
                 />
               </>
@@ -81,6 +91,7 @@ export default function home() {
           ) : null}
         </View>
       </ScrollView>
+      <Toast />
     </SafeAreaView>
   );
 }

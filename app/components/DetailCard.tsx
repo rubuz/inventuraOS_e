@@ -6,13 +6,19 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-import { LastnikOSResponse, LastnikOSResult } from "../../types/types";
+import {
+  LastnikOSResponse,
+  LastnikOSResult,
+  ShowToastParams,
+  sendParams,
+} from "../../types/types";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
 import { NaziviResponse } from "../../types/types";
-import { getNazivi, getOSinfo } from "../../api/apiService";
+import { checkLocation, getNazivi, getOSinfo } from "../../api/apiService";
 import CustomButton from "./CustomButton";
 import OldOSModal from "./OldOSModal";
+import Toast from "react-native-toast-message";
 
 const chevronLeft = require("../../assets/images/chevron-left.png");
 
@@ -20,9 +26,15 @@ interface DetailCardProps {
   dataOS: LastnikOSResult | null;
   isNaziv?: boolean;
   popisanoColor: boolean;
+  numberOS: number;
 }
 
-const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
+const DetailCard = ({
+  dataOS,
+  isNaziv,
+  popisanoColor,
+  numberOS,
+}: DetailCardProps) => {
   const [oldNumberOS, setOldNumberOS] = useState(0);
   const [oldDataOS, setOldDataOS] = useState<
     LastnikOSResult | null | undefined
@@ -30,6 +42,8 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
   const [newNaziv, setNewNaziv] = useState<string>("");
   const [nazivi, setNazivi] = useState<NaziviResponse>([]);
   const [novaLokacija, setNovaLokacija] = useState<string | null>(null);
+
+  const [sendData, setSendData] = useState<sendParams | null>();
 
   const [oldDataModal, setOldDataModal] = useState<boolean>(false);
 
@@ -43,8 +57,25 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
   };
 
   useEffect(() => {
+    setNewNaziv("");
+    setOldDataOS(undefined);
+    setNovaLokacija(null);
+  }, [dataOS]);
+
+  useEffect(() => {
     handleGetNazivi();
   }, []);
+
+  const showToast = ({ type, text1, text2 }: ShowToastParams) => {
+    Toast.show({
+      type: type,
+      text1: text1,
+      text2: text2,
+      visibilityTime: 4000,
+      autoHide: true,
+      position: "bottom",
+    });
+  };
 
   const handleGetLastnikOld = async () => {
     try {
@@ -52,6 +83,10 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
       if (oldData.result === null) {
         console.log("Številka ne obstaja");
         setOldDataOS(null);
+        showToast({
+          type: "error",
+          text1: "Ta številka OS ne obstaja",
+        });
       } else {
         setOldDataOS(oldData.result);
         setOldDataModal(true);
@@ -61,12 +96,54 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
     }
   };
 
-  const handleNovaLokacija = (e: string) => {
+  const locationCheck = async (location: number) => {
+    try {
+      const data = await checkLocation(location);
+      return data.result.value;
+    } catch (error) {
+      showToast({
+        type: "error",
+        text1: "Napaka pri preverjanju lokacije",
+      });
+    }
+  };
+
+  const handleNovaLokacija = async (e: string) => {
     setNovaLokacija(e);
   };
 
   const handleCopy = () => {
     setNovaLokacija(String(dataOS?.lokacija));
+  };
+
+  const potrditev = async () => {
+    let testLocation = await locationCheck(Number(novaLokacija));
+    if (testLocation === false) {
+      showToast({
+        type: "error",
+        text1: "Lokacija ne obstaja",
+      });
+      return;
+    }
+    if (newNaziv === "Naziv starega OS") {
+      if (oldDataOS?.osstanje_ime !== undefined) {
+        setSendData({
+          stev: numberOS,
+          lokacija: Number(novaLokacija),
+          stev_old: oldNumberOS,
+          naziv_inv: oldDataOS?.osstanje_ime,
+        });
+      }
+    } else {
+      setSendData({
+        stev: numberOS,
+        lokacija: Number(novaLokacija),
+        stev_old: oldNumberOS,
+        naziv_inv: newNaziv,
+      });
+    }
+
+    console.log(sendData);
   };
 
   return (
@@ -81,51 +158,9 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
             <Text className="text-center mb-2 text-base font-psemibold">
               Osnovno sredstvo nima naziva
             </Text>
-            <Text className="text-sm font-psemibold">Nov naziv</Text>
-            <View
-              className={`w-full h-10 rounded-2xl border-[1px] font-pregular flex-col items-center justify-center ${
-                popisanoColor
-                  ? "border-green-300 bg-green-100 focus:border-green-500"
-                  : "border-red-300 bg-red-100 focus:border-red-500"
-              }`}
-            >
-              <Picker
-                selectedValue={
-                  dataOS?.stev_old !== null ? dataOS?.naziv_inv : newNaziv
-                }
-                onValueChange={(itemValue, itemIndex) => setNewNaziv(itemValue)}
-                placeholder="Izberi naziv"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  marginLeft: -15,
-                }}
-              >
-                {nazivi.map((naziv, index) => (
-                  <Picker.Item
-                    label={naziv.naziv}
-                    value={naziv.naziv}
-                    key={index}
-                    fontFamily="Popins-Regular"
-                    style={{
-                      fontFamily: "Poppins-Regular",
-                      fontWeight: "bold",
-                      fontSize: 16,
-                    }}
-                  />
-                ))}
-              </Picker>
-            </View>
-            <Text className="text-sm font-psemibold mt-2">
+            <Text className="text-sm font-psemibold mt-1">
               Stara številka OS
             </Text>
-            <OldOSModal
-              visible={oldDataModal}
-              oldDataOS={oldDataOS}
-              onClose={() => {
-                setOldDataModal(false);
-              }}
-            />
             <View
               className={`w-full h-10 rounded-2xl border-[1px] font-pregular flex-col items-center justify-center ${
                 popisanoColor
@@ -145,15 +180,81 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
                 onSubmitEditing={() => handleGetLastnikOld()}
               />
             </View>
-
             {oldDataOS?.osstanje_ime !== undefined && (
               <>
                 <Text className="text-sm font-psemibold mt-2">Stari naziv</Text>
-                <Text className="text-base font-pmedium mb-4">
+                <Text className="text-base font-pmedium">
                   {oldDataOS?.osstanje_ime}
                 </Text>
               </>
             )}
+            <Text className="text-sm font-psemibold mt-2">Nov naziv</Text>
+            <View
+              className={`w-full h-10 rounded-2xl border-[1px] font-pregular flex-col items-center justify-center ${
+                popisanoColor
+                  ? "border-green-300 bg-green-100 focus:border-green-500"
+                  : "border-red-300 bg-red-100 focus:border-red-500"
+              }`}
+            >
+              <Picker
+                selectedValue={newNaziv}
+                onValueChange={(itemValue, itemIndex) => setNewNaziv(itemValue)}
+                placeholder="Izberi naziv"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  marginLeft: -15,
+                }}
+              >
+                <Picker.Item
+                  label=""
+                  value=""
+                  fontFamily="Popins-Regular"
+                  style={{
+                    fontFamily: "Poppins-Regular",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                  }}
+                />
+                {oldDataOS && (
+                  <Picker.Item
+                    label="Naziv starega OS"
+                    value="Naziv starega OS"
+                    fontFamily="Popins-Regular"
+                    enabled={
+                      oldDataOS?.osstanje_ime !== undefined ? true : false
+                    }
+                    style={{
+                      fontFamily: "Poppins-Regular",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                    }}
+                  />
+                )}
+
+                {nazivi.slice(2).map((naziv, index) => (
+                  <Picker.Item
+                    label={naziv.naziv}
+                    value={naziv.naziv}
+                    key={index}
+                    fontFamily="Popins-Regular"
+                    style={{
+                      fontFamily: "Poppins-Regular",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                    }}
+                  />
+                ))}
+              </Picker>
+            </View>
+
+            <OldOSModal
+              visible={oldDataModal}
+              oldDataOS={oldDataOS}
+              onClose={() => {
+                setOldDataModal(false);
+              }}
+            />
 
             {/* {dataOS?.stev_old_naziv !== null && (
             <>
@@ -166,7 +267,7 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
           </>
         )}
         {dataOS?.osstanje_ime !== null && (
-          <Text className="text-lg font-pmedium mb-4">
+          <Text className="text-lg font-pmedium mb-2">
             {dataOS?.osstanje_ime}
           </Text>
         )}
@@ -232,12 +333,14 @@ const DetailCard = ({ dataOS, isNaziv, popisanoColor }: DetailCardProps) => {
       </View>
       <CustomButton
         title="VNESI"
-        handlePress={() => setNovaLokacija(null)}
+        handlePress={potrditev}
         containerStyles="bg-[#002d5f]"
         disable={novaLokacija === "0" || novaLokacija === null ? true : false}
       />
+      <Toast />
     </>
   );
 };
 
 export default DetailCard;
+1;

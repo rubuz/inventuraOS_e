@@ -129,7 +129,7 @@ export const potrdilo = async ({
           stev: stev,
           lokacija: lokacija,
           stev_old: stev_old,
-          naziv: naziv,
+          naziv_inv: naziv,
         },
       },
       {
