@@ -6,7 +6,8 @@ import FormField from "./components/FormField";
 import { useEffect, useState } from "react";
 import { login } from "../api/apiService";
 import { router } from "expo-router";
-import { Form, LoginResponse } from "../types/types";
+import { Form, LoginResponse, ShowToastParams } from "../types/types";
+import { showToast } from "./components/toast";
 import Toast from "react-native-toast-message";
 
 const logo = require("../assets/images/adria.jpg");
@@ -24,12 +25,16 @@ export default function App() {
     setLoginError("");
     try {
       const data: LoginResponse = await login({
-        user: form.user,
+        user: form.user.toUpperCase(),
         password: form.password,
       });
       if (data.result === null) {
-        console.error(data.error.text);
-        console.log("FAKIN FAIL");
+        // console.error(data.error.text);
+        // console.log("FAIL");
+        showToast({
+          type: "error",
+          text1: "Nepravilno uporabniško ime ali geslo!",
+        });
       } else {
         const resultArray = data.result;
         const hasCfaminventura = resultArray.some(
@@ -37,17 +42,22 @@ export default function App() {
         );
         if (!hasCfaminventura) {
           setLoginError("User does not have access to cfaminventura");
-          console.error("User does not have access to cfaminventura");
+          showToast({
+            type: "error",
+            text1: "Uporabnik nima dostopa do cfaminventura!",
+          });
           return;
         } else {
-          console.log("Login successful", data.result);
           console.log("Login successful", data.result[0].displayname);
           router.push("/home");
         }
       }
     } catch (error) {
       setLoginError("An error occurred during login");
-      console.error("Login error", error);
+      showToast({
+        type: "error",
+        text1: "Napaka pri prijavi!",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -150,22 +160,23 @@ export default function App() {
             value={form.user}
             handleChangeText={(e: string) => setForm({ ...form, user: e })}
             placeholder="Uporabniško ime"
-            otherStyles="mt-4"
+            otherStyles="mt-2"
           />
           <FormField
             title="Geslo"
             placeholder="Geslo"
             value={form.password}
-            otherStyles="mt-4"
+            otherStyles="mt-2"
             handleChangeText={(e: string) => setForm({ ...form, password: e })}
           />
           <CustomButton
             title="Vpiši se"
             handlePress={handleLogin}
-            containerStyles="w-full mt-4 bg-[#002d5f]"
+            containerStyles="w-full mt-2 bg-[#002d5f]"
             isLoading={isSubmiting}
           />
         </View>
+        <Toast />
       </ScrollView>
     </SafeAreaView>
   );

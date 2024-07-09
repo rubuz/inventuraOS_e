@@ -16,7 +16,7 @@ const OldOSModal = ({ visible, oldDataOS, onClose }: OldOSModalProps) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View className="bg-slate-100 rounded-2xl border-[1px] p-4 w-4/5 mx-auto my-auto">
+      <View className="bg-slate-100 rounded-2xl border-[1px] p-2 w-4/5 mx-auto my-auto">
         <Text className="text-lg font-psemibold">
           {oldDataOS?.osstanje_ime}
         </Text>

@@ -19,6 +19,7 @@ import { checkLocation, getNazivi, getOSinfo } from "../../api/apiService";
 import CustomButton from "./CustomButton";
 import OldOSModal from "./OldOSModal";
 import Toast from "react-native-toast-message";
+import { showToast } from "./toast";
 
 const chevronLeft = require("../../assets/images/chevron-left.png");
 
@@ -65,17 +66,6 @@ const DetailCard = ({
   useEffect(() => {
     handleGetNazivi();
   }, []);
-
-  const showToast = ({ type, text1, text2 }: ShowToastParams) => {
-    Toast.show({
-      type: type,
-      text1: text1,
-      text2: text2,
-      visibilityTime: 4000,
-      autoHide: true,
-      position: "bottom",
-    });
-  };
 
   const handleGetLastnikOld = async () => {
     try {
@@ -125,6 +115,13 @@ const DetailCard = ({
       });
       return;
     }
+    if (dataOS?.osstanje_ime === null && newNaziv === "") {
+      showToast({
+        type: "error",
+        text1: "Izberi naziv",
+      });
+      return;
+    }
     if (newNaziv === "Naziv starega OS") {
       if (oldDataOS?.osstanje_ime !== undefined) {
         setSendData({
@@ -143,26 +140,34 @@ const DetailCard = ({
       });
     }
 
+    if (dataOS?.popisan === "D") {
+      showToast({
+        type: "error",
+        text1: "OS je že popisan",
+      });
+      return;
+    }
+
     console.log(sendData);
   };
 
   return (
     <>
       <View
-        className={`p-4 my-4 rounded-2xl ${
+        className={`p-2 my-2 rounded-2xl ${
           popisanoColor ? "bg-green-200" : "bg-red-200"
         }`}
       >
         {!isNaziv && (
           <>
-            <Text className="text-center mb-2 text-base font-psemibold">
+            {/* <Text className="text-center mb-2 text-base font-psemibold">
               Osnovno sredstvo nima naziva
-            </Text>
+            </Text> */}
             <Text className="text-sm font-psemibold mt-1">
               Stara številka OS
             </Text>
             <View
-              className={`w-full h-10 rounded-2xl border-[1px] font-pregular flex-col items-center justify-center ${
+              className={`w-full h-8 rounded-xl border-[1px] font-pregular flex-col items-center justify-center ${
                 popisanoColor
                   ? "border-green-300 bg-green-100 focus:border-green-500"
                   : "border-red-300 bg-red-100 focus:border-red-500"
@@ -183,14 +188,14 @@ const DetailCard = ({
             {oldDataOS?.osstanje_ime !== undefined && (
               <>
                 <Text className="text-sm font-psemibold mt-2">Stari naziv</Text>
-                <Text className="text-base font-pmedium">
+                <Text className="text-sm font-pmedium">
                   {oldDataOS?.osstanje_ime}
                 </Text>
               </>
             )}
-            <Text className="text-sm font-psemibold mt-2">Nov naziv</Text>
+            <Text className="text-sm font-psemibold mt-1">Nov naziv</Text>
             <View
-              className={`w-full h-10 rounded-2xl border-[1px] font-pregular flex-col items-center justify-center ${
+              className={`w-full h-8 rounded-xl border-[1px] font-pregular flex-col items-center justify-center ${
                 popisanoColor
                   ? "border-green-300 bg-green-100 focus:border-green-500"
                   : "border-red-300 bg-red-100 focus:border-red-500"
@@ -213,7 +218,7 @@ const DetailCard = ({
                   style={{
                     fontFamily: "Poppins-Regular",
                     fontWeight: "bold",
-                    fontSize: 16,
+                    fontSize: 14,
                   }}
                 />
                 {oldDataOS && (
@@ -227,11 +232,10 @@ const DetailCard = ({
                     style={{
                       fontFamily: "Poppins-Regular",
                       fontWeight: "bold",
-                      fontSize: 16,
+                      fontSize: 14,
                     }}
                   />
                 )}
-
                 {nazivi.slice(2).map((naziv, index) => (
                   <Picker.Item
                     label={naziv.naziv}
@@ -241,7 +245,7 @@ const DetailCard = ({
                     style={{
                       fontFamily: "Poppins-Regular",
                       fontWeight: "bold",
-                      fontSize: 16,
+                      fontSize: 14,
                     }}
                   />
                 ))}
@@ -255,39 +259,27 @@ const DetailCard = ({
                 setOldDataModal(false);
               }}
             />
-
-            {/* {dataOS?.stev_old_naziv !== null && (
-            <>
-              <Text className="text-sm font-psemibold mt-4">Stari naziv</Text>
-              <Text className="text-base font-pmedium mb-4">
-                {dataOS?.stev_old_naziv}
-              </Text>
-            </>
-          )} */}
           </>
         )}
         {dataOS?.osstanje_ime !== null && (
-          <Text className="text-lg font-pmedium mb-2">
-            {dataOS?.osstanje_ime}
-          </Text>
+          <Text className="text-lg font-pmedium">{dataOS?.osstanje_ime}</Text>
         )}
-        {/* <Text className="text-lg font-pmedium mb-4">{dataOS?.osstanje_ime}</Text> */}
-        <Text className="text-sm font-psemibold mt-2">Lastnik</Text>
+        <Text className="text-sm font-psemibold mt-1">Lastnik</Text>
         <View className="w-full flex flex-row justify-between">
-          <Text className="font-pregular text-lg">{dataOS?.ime}</Text>
+          <Text className="font-pregular text-base">{dataOS?.ime}</Text>
           <Text>{dataOS?.sifra}</Text>
         </View>
-        <Text className="text-sm mt-2 font-psemibold">Lokacija</Text>
+        <Text className="text-sm mt-1 font-psemibold">Lokacija</Text>
         <View className="w-full flex flex-row justify-between">
-          <Text className="font-pregular text-lg">
+          <Text className="font-pregular text-base">
             {dataOS?.lokacija === null ? "/" : dataOS?.lokacija}
           </Text>
           <Text>{dataOS?.obrat_ime}</Text>
         </View>
-        <View className="mt-2 w-full relative">
+        <View className="mt-1 w-full relative">
           <Text className="mb-1 font-psemibold text-sm">Nova lokacija</Text>
           <View
-            className={`w-full h-10 border-[1px] rounded-2xl flex-row items-center justify-between pl-4 relative ${
+            className={`w-full h-8 border-[1px] rounded-xl flex-row items-center justify-between pl-2 relative ${
               popisanoColor
                 ? "border-green-300 bg-green-100 focus:border-green-500"
                 : "border-red-300 bg-red-100 focus:border-red-500"
@@ -306,9 +298,9 @@ const DetailCard = ({
               onChangeText={handleNovaLokacija}
             />
             <TouchableOpacity
-              className={`h-full flex-row items-center justify-center ${
+              className={`h-8 flex-row items-center justify-center ${
                 popisanoColor ? "bg-green-300" : "bg-red-300"
-              } rounded-[14px] px-4 absolute right-0 z-10`}
+              } rounded-[10px] px-2 absolute right-0 z-10`}
               onPress={handleCopy}
               disabled={dataOS?.lokacija === null ? true : false}
             >
@@ -317,16 +309,16 @@ const DetailCard = ({
                 resizeMode="contain"
                 className="h-3 w-3 pr-6"
               />
-              <Text className="text-sm font-pregular">Kopiraj staro</Text>
+              <Text className="text-xs font-pregular">Kopiraj staro</Text>
             </TouchableOpacity>
           </View>
         </View>
         {dataOS?.popisan === "D" ? (
-          <Text className="text-base font-pbold text-green-700 text-center mt-4 tracking-wider">
+          <Text className="text-sm font-pbold text-green-700 text-center mt-2 tracking-wider">
             POPISANO
           </Text>
         ) : (
-          <Text className="text-base font-pbold text-red-700 text-center mt-4 tracking-wider">
+          <Text className="text-sm font-pbold text-red-700 text-center mt-2 tracking-wider">
             NEPOPISANO
           </Text>
         )}

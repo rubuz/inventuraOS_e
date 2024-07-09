@@ -45,17 +45,17 @@ export default function home() {
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full min-h-[85vh] justify-start px-4 my-8188 font-pregular">
-          <Text className="text-2xl font-psemibold mt-5 text-center">
+        <View className="w-full min-h-[95vh] justify-start px-4 font-pregular">
+          {/* <Text className="text-xl font-psemibold mt-2 text-center">
             Inventura OS
-          </Text>
+          </Text> */}
           <View className="relative">
-            <Text className="text-base text-black font-pmedium text-center bg-white top-3 px-2 ">
+            {/* <Text className="text-base text-black font-pmedium text-center bg-white top-3 px-2 ">
               Številka osnovnega sredstva
-            </Text>
-            <View className="w-full h-16 px-4 pl-6 mt-4 bg-white border-2 border-slate-400 rounded-2xl focus:border-[#002d5f] flex-row items-center">
+            </Text> */}
+            <View className="w-full h-10 px-4 pl-6 mt-4 bg-white border-2 border-slate-400 rounded-2xl focus:border-[#002d5f] flex-row items-center">
               <TextInput
-                className="text-3xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
+                className="text-xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
                 keyboardType="numeric"
                 autoFocus={true}
                 onChangeText={(e) => setNumberOS(Number(e))}
@@ -85,7 +85,7 @@ export default function home() {
               </>
             )
           ) : dataOS === null ? (
-            <Text className="text-center text-red-500 my-6 text-xl font-pbold">
+            <Text className="text-center text-red-500 my-4 text-xl font-pbold">
               Številka ne obstaja
             </Text>
           ) : null}
