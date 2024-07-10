@@ -11,7 +11,6 @@ import { getNazivi, getOSinfo } from "../api/apiService";
 import { LastnikOSResponse, LastnikOSResult, sendParams } from "../types/types";
 import DetailCard from "./components/DetailCard";
 import Toast from "react-native-toast-message";
-import DataWedgeIntents from "react-native-datawedge-intents";
 
 type NazivItem = {
   naziv: string;
@@ -33,30 +32,6 @@ export default function home() {
   //     console.log(nazivi);
   //   }
   // }, [dataOS]);
-
-  useEffect(() => {
-    // Listen for barcode scans
-    DeviceEventEmitter.addListener("datawedge_broadcast_intent", (intent) => {
-      // Extract the scanned data. The intent action and data key might vary based on your DataWedge configuration.
-      const scannedData = intent?.["com.symbol.datawedge.data_string"];
-      console.log("Scanned data: ", scannedData);
-      setNumberOS(scannedData);
-    });
-
-    // Specify the action of the intent you configured in DataWedge
-    DataWedgeIntents.registerBroadcastReceiver({
-      filterActions: [
-        "com.zebra.inventura.ACTION",
-        "com.symbol.datawedge.api.RESULT_ACTION",
-      ],
-      filterCategories: ["android.intent.category.DEFAULT"],
-    });
-
-    return () => {
-      // Clean up
-      DeviceEventEmitter.removeAllListeners("datawedge_broadcast_intent");
-    };
-  }, []);
 
   const handleGetLastnik = async () => {
     try {
@@ -89,6 +64,8 @@ export default function home() {
                 className="text-xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
                 keyboardType="numeric"
                 autoFocus={true}
+                clearTextOnFocus={true}
+                showSoftInputOnFocus={false}
                 onChangeText={(e) => setNumberOS(Number(e))}
                 onSubmitEditing={() => handleGetLastnik()}
               />

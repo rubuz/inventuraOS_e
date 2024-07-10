@@ -288,6 +288,8 @@ const DetailCard = ({
             <TextInput
               className="font-pregular flex h-full w-full items-center"
               keyboardType="numeric"
+              showSoftInputOnFocus={false}
+              autoFocus={true}
               value={
                 dataOS?.popisan === "D"
                   ? String(dataOS?.lokacija_inv)

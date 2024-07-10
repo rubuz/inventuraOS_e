@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { DeviceEventEmitter, StyleSheet, Text, View } from "react-native";
 import React, { useEffect } from "react";
 import { Slot, SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import Toast from "react-native-toast-message";
+import DataWedgeIntents from "react-native-datawedge-intents";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,29 @@ const RootLayout = () => {
   if (!fontsLoaded && !error) {
     return null;
   }
+
+  // useEffect(() => {
+  //   // Listen for barcode scans
+  //   DeviceEventEmitter.addListener("datawedge_broadcast_intent", (intent) => {
+  //     // Extract the scanned data. The intent action and data key might vary based on your DataWedge configuration.
+  //     const scannedData = intent?.["com.symbol.datawedge.data_string"];
+  //     console.log("Scanned data: ", scannedData);
+  //   });
+
+  //   // Specify the action of the intent you configured in DataWedge
+  //   DataWedgeIntents.registerBroadcastReceiver({
+  //     filterActions: [
+  //       "com.zebra.inventura.ACTION",
+  //       "com.symbol.datawedge.api.RESULT_ACTION",
+  //     ],
+  //     filterCategories: ["android.intent.category.DEFAULT"],
+  //   });
+
+  //   return () => {
+  //     // Clean up
+  //     DeviceEventEmitter.removeAllListeners("datawedge_broadcast_intent");
+  //   };
+  // }, []);
 
   return (
     <Stack>

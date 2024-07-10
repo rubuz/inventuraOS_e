@@ -1,9 +1,17 @@
 import { StatusBar } from "expo-status-bar";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  DeviceEventEmitter,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CustomButton from "./components/CustomButton";
 import { SafeAreaView } from "react-native-safe-area-context";
-import FormField from "./components/FormField";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { login } from "../api/apiService";
 import { router } from "expo-router";
 import { Form, LoginResponse, ShowToastParams } from "../types/types";
@@ -19,6 +27,9 @@ export default function App() {
   });
   const [isSubmiting, setIsSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const passwordInputRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {
     setIsSubmitting(true);
@@ -63,15 +74,15 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Place your action here. For example:
-      router.push("/home");
-      // Or any other logic you want to execute after 2 seconds
-    }, 500);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     // Place your action here. For example:
+  //     router.push("/home");
+  //     // Or any other logic you want to execute after 2 seconds
+  //   }, 500);
 
-    return () => clearTimeout(timer); // Cleanup the timer on component unmount
-  }, []);
+  //   return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  // }, []);
 
   // const login = async (user, password) => {
   //   setIsSubmitting(true);
@@ -146,7 +157,7 @@ export default function App() {
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full min-h-[85vh] justify-center items-center px-4 my-6">
+        <View className="w-full min-h-[95vh] justify-startr items-center px-4 my-6">
           <Image
             source={logo}
             resizeMode="contain"
@@ -155,20 +166,58 @@ export default function App() {
           <Text className="text-2xl font-psemibold mt-5 text-center">
             Invetura OS
           </Text>
-          <FormField
-            title="Uporabnik"
-            value={form.user}
-            handleChangeText={(e: string) => setForm({ ...form, user: e })}
-            placeholder="Uporabniško ime"
-            otherStyles="mt-2"
-          />
-          <FormField
-            title="Geslo"
-            placeholder="Geslo"
-            value={form.password}
-            otherStyles="mt-2"
-            handleChangeText={(e: string) => setForm({ ...form, password: e })}
-          />
+
+          {/* USER INPUT */}
+          <View className={`space-y-1 mt-2 relative`}>
+            <Text className="text-base text-black font-pmedium text-center absolute z-20 bg-white -top-1.5 px-2 left-[17px]">
+              Uporabnik
+            </Text>
+            <View className="w-full h-[50px] px-4 pl-6 bg-white border-2 border-slate-600 rounded-2xl focus:border-blue-70 flex-row items-center">
+              <TextInput
+                className="flex-1 font-psemibold text-base"
+                value={form.user}
+                showSoftInputOnFocus={false}
+                clearTextOnFocus={true}
+                autoFocus={true}
+                placeholderTextColor={"#A1A1AA"}
+                onChangeText={(e: string) => setForm({ ...form, user: e })}
+                onSubmitEditing={() =>
+                  passwordInputRef.current && passwordInputRef.current.focus()
+                }
+                returnKeyType="next"
+              />
+            </View>
+          </View>
+
+          {/* PASSWORD INPUT */}
+          <View className={`space-y-1 mt-2 relative`}>
+            <Text className="text-base text-black font-pmedium text-center absolute z-20 bg-white -top-1.5 px-2 left-[17px]">
+              Geslo
+            </Text>
+            <View className="w-full h-[50px] px-4 pl-6 bg-white border-2 border-slate-600 rounded-2xl focus:border-blue-70 flex-row items-center">
+              <TextInput
+                ref={passwordInputRef}
+                className="flex-1 font-psemibold text-base"
+                value={form.password}
+                showSoftInputOnFocus={false}
+                clearTextOnFocus={true}
+                placeholderTextColor={"#A1A1AA"}
+                onChangeText={(e: string) => setForm({ ...form, password: e })}
+                secureTextEntry={true}
+                returnKeyType="go"
+                onSubmitEditing={handleLogin}
+              />
+              <TouchableOpacity
+                onPressIn={() => setShowPassword(true)}
+                onPressOut={() => setShowPassword(false)}
+              >
+                <Text className="text-xs text-slate-600 font-pregular">
+                  Pokaži
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           <CustomButton
             title="Vpiši se"
             handlePress={handleLogin}
