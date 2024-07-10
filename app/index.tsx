@@ -157,7 +157,7 @@ export default function App() {
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full min-h-[95vh] justify-startr items-center px-4 my-6">
+        <View className="w-full min-h-[95vh] justify-startr items-center px-2 my-6">
           <Image
             source={logo}
             resizeMode="contain"
