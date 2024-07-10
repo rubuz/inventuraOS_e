@@ -1,4 +1,10 @@
-import { ScrollView, Text, TextInput, View } from "react-native";
+import {
+  DeviceEventEmitter,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getNazivi, getOSinfo } from "../api/apiService";
@@ -58,6 +64,8 @@ export default function home() {
                 className="text-xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
                 keyboardType="numeric"
                 autoFocus={true}
+                clearTextOnFocus={true}
+                showSoftInputOnFocus={false}
                 onChangeText={(e) => setNumberOS(Number(e))}
                 onSubmitEditing={() => handleGetLastnik()}
               />
