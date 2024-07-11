@@ -9,8 +9,18 @@ import {
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { checkLocation, getNazivi, getOSinfo } from "../api/apiService";
-import { LastnikOSResponse, LastnikOSResult, sendParams } from "../types/types";
+import {
+  checkLocation,
+  getNazivi,
+  getOSinfo,
+  potrdilo,
+} from "../api/apiService";
+import {
+  LastnikOSResponse,
+  LastnikOSResult,
+  PotrdiloResponse,
+  sendParams,
+} from "../types/types";
 import DetailCard from "./components/DetailCard";
 import Toast from "react-native-toast-message";
 import { showToast } from "./components/toast";
@@ -37,8 +47,15 @@ export default function home() {
   >(undefined);
   const [newNaziv, setNewNaziv] = useState<string>("");
   const [nazivi, setNazivi] = useState<NaziviResponse>([]);
-  const [novaLokacija, setNovaLokacija] = useState<string | null>(null);
-  const [sendData, setSendData] = useState<sendParams | null>();
+  const [novaLokacija, setNovaLokacija] = useState<string | null>("");
+  const [inuputLocationValue, setInputLocationValue] = useState<string>("");
+
+  const [sendData, setSendData] = useState<sendParams>({
+    stev: 0,
+    lokacija: 0,
+    stev_old: 0,
+    naziv_inv: "",
+  });
   const [oldDataModal, setOldDataModal] = useState<boolean>(false);
 
   const lokacijaInputRef = useRef<TextInput>(null);
@@ -65,6 +82,10 @@ export default function home() {
   useEffect(() => {
     handleGetNazivi();
   }, []);
+
+  useEffect(() => {
+    setSendData((prev) => ({ ...prev, lokacija: Number(novaLokacija) }));
+  }, [dataOS?.lokacija_inv]);
 
   const handleGetLastnikOld = async () => {
     try {
@@ -97,14 +118,6 @@ export default function home() {
     }
   };
 
-  const handleNovaLokacija = (e: string) => {
-    setNovaLokacija(e);
-  };
-
-  const handleCopy = () => {
-    setNovaLokacija(String(dataOS?.lokacija));
-  };
-
   // useEffect(() => {
   //   if (dataOS !== null) {
   //     console.log(dataOS);
@@ -127,12 +140,50 @@ export default function home() {
     }
   };
 
+  const sendingData = async () => {
+    try {
+      const data: PotrdiloResponse = await potrdilo(sendData);
+      if (data.error.error === true) {
+        let errorMessage = data.error.text;
+        const matches = errorMessage.match(/\r\n(.*?)\r\n/);
+        if (matches && matches[1]) {
+          errorMessage = matches[1];
+          console.log(errorMessage);
+        }
+        showToast({
+          type: "error",
+          text1: "NAPAKA",
+          text2: errorMessage,
+        });
+      } else {
+        showToast({
+          type: "success",
+          text1: "Podatki uspešno poslani",
+        });
+        const successData = await getOSinfo(sendData.stev);
+        try {
+          if (successData.result === null) {
+            console.log("Številka ne obstaja");
+            setDataOS(null);
+          } else {
+            setDataOS(successData.result);
+          }
+        } catch (error) {
+          console.error("Login error", error);
+        }
+      }
+    } catch (error) {
+      console.error("Sending data error", error);
+    }
+  };
+
   const potrditev = async () => {
     let testLocation = await locationCheck(Number(novaLokacija));
     if (testLocation === false) {
       showToast({
         type: "error",
-        text1: "Lokacija ne obstaja",
+        text1: "NAPAKA",
+        text2: "Lokacija ne obstaja",
       });
       return;
     }
@@ -151,6 +202,7 @@ export default function home() {
           stev_old: oldNumberOS,
           naziv_inv: oldDataOS?.osstanje_ime,
         });
+        sendingData();
       }
     } else {
       setSendData({
@@ -159,6 +211,7 @@ export default function home() {
         stev_old: oldNumberOS,
         naziv_inv: newNaziv,
       });
+      sendingData();
     }
 
     if (dataOS?.popisan === "D") {
@@ -168,13 +221,11 @@ export default function home() {
       });
       return;
     }
-
-    console.log(sendData);
   };
 
   return (
     <SafeAreaView className="bg-white h-full">
-      <ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled">
         <View className="w-full min-h-[95vh] justify-start px-2 font-pregular">
           {/* <Text className="text-xl font-psemibold mt-2 text-center">
             Inventura OS
@@ -190,11 +241,13 @@ export default function home() {
                 autoFocus={true}
                 clearTextOnFocus={true}
                 showSoftInputOnFocus={false}
+                value={numberOS === 0 ? "" : String(numberOS)}
                 onChangeText={(e) => setNumberOS(Number(e))}
                 onSubmitEditing={() => {
                   handleGetLastnik();
                   lokacijaInputRef.current && lokacijaInputRef.current.focus();
                 }}
+                onFocus={() => setNumberOS(0)}
               />
             </View>
           </View>
@@ -346,7 +399,9 @@ export default function home() {
             )}
             <Text className="text-xs font-psemibold mt-1">Lastnik</Text>
             <View className="w-full flex flex-row justify-between">
-              <Text className="font-pregular text-base">{dataOS?.ime}</Text>
+              <Text className="font-pregular text-base max-w-[75%]">
+                {dataOS?.ime}
+              </Text>
               <Text>{dataOS?.sifra}</Text>
             </View>
             <Text className="text-xs mt-1 font-psemibold">Lokacija</Text>
@@ -370,20 +425,15 @@ export default function home() {
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
-                  value={
-                    dataOS?.popisan === "D"
-                      ? String(dataOS?.lokacija_inv)
-                      : novaLokacija !== null
-                      ? novaLokacija
-                      : ""
-                  }
-                  onChangeText={handleNovaLokacija}
+                  clearTextOnFocus={true}
+                  value={novaLokacija === null ? "" : novaLokacija}
+                  onChangeText={(e) => setNovaLokacija(e)}
                 />
                 <TouchableOpacity
                   className={`h-8 flex-row items-center justify-center ${
                     dataOS?.popisan === "D" ? "bg-green-300" : "bg-red-300"
-                  } rounded-[10px] px-2 absolute right-0 z-10`}
-                  onPress={handleCopy}
+                  } rounded-[10px] px-2 absolute -right-[1px] z-10`}
+                  onPress={() => setNovaLokacija(String(dataOS?.lokacija))}
                   disabled={dataOS?.lokacija === null ? true : false}
                 >
                   <Image
@@ -412,7 +462,7 @@ export default function home() {
             disable={
               novaLokacija === "0" ||
               novaLokacija === null ||
-              dataOS?.lokacija_inv === null ||
+              novaLokacija === "" ||
               dataOS === (null || undefined)
                 ? true
                 : false

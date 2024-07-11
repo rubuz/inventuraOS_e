@@ -74,15 +74,15 @@ export default function App() {
     }
   };
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     // Place your action here. For example:
-  //     router.push("/home");
-  //     // Or any other logic you want to execute after 2 seconds
-  //   }, 500);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Place your action here. For example:
+      router.push("/home");
+      // Or any other logic you want to execute after 2 seconds
+    }, 500);
 
-  //   return () => clearTimeout(timer); // Cleanup the timer on component unmount
-  // }, []);
+    return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  }, []);
 
   // const login = async (user, password) => {
   //   setIsSubmitting(true);
