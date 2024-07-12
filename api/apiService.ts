@@ -20,7 +20,7 @@ type potrdiloParams = {
   stev: number;
   lokacija: number;
   stev_old: number;
-  naziv: string;
+  naziv_inv: string;
 };
 
 export const login = async ({ user, password }: LoginParams) => {
@@ -119,7 +119,7 @@ export const potrdilo = async ({
   stev,
   lokacija,
   stev_old,
-  naziv,
+  naziv_inv,
 }: potrdiloParams) => {
   try {
     const response = await axios.post(
@@ -129,7 +129,7 @@ export const potrdilo = async ({
           stev: stev,
           lokacija: lokacija,
           stev_old: stev_old,
-          naziv_inv: naziv,
+          naziv_inv: naziv_inv,
         },
       },
       {

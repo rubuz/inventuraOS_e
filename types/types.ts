@@ -4,7 +4,7 @@ export type Form = {
 };
 
 interface Error {
-  error: string;
+  error: boolean;
   text: string;
 }
 
@@ -32,6 +32,7 @@ export interface LastnikOSResult {
   osstanje_ime: string;
   popisan: string;
   sifra: number;
+  spec1: string;
   stev_old: number;
   stev_old_naziv: string;
 }
@@ -60,4 +61,8 @@ export interface ShowToastParams {
   type: ToastType;
   text1: string;
   text2?: string;
+}
+
+export interface PotrdiloResponse {
+  error: Error;
 }
