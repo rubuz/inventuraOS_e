@@ -27,6 +27,7 @@ import { showToast } from "./components/toast";
 import CustomButton from "./components/CustomButton";
 import { Picker } from "@react-native-picker/picker";
 import OldOSModal from "./components/OldOSModal";
+import PopisanModal from "./components/PopisanModal";
 
 const chevronLeft = require("../assets/images/chevron-left.png");
 
@@ -57,6 +58,8 @@ export default function home() {
     naziv_inv: "",
   });
   const [oldDataModal, setOldDataModal] = useState<boolean>(false);
+  const [popisanModal, setPopisanModal] = useState<boolean>(false);
+  const [sendAgain, setSendAgain] = useState<boolean>(false);
 
   const lokacijaInputRef = useRef<TextInput>(null);
 
@@ -95,11 +98,23 @@ export default function home() {
         setOldDataOS(null);
         showToast({
           type: "error",
-          text1: "Ta številka OS ne obstaja",
+          text1: "NAPAKA ❌",
+          text2: "Ta številka OS ne obstaja",
         });
       } else {
-        setOldDataOS(oldData.result);
-        setOldDataModal(true);
+        if (oldData.result.popisan === "D") {
+          showToast({
+            type: "error",
+            text1: "NAPAKA ❌",
+            text2: "Osnovno sredstvo je že popisano",
+          });
+          setOldDataOS(null);
+          setOldNumberOS(0);
+          setOldDataModal(false);
+        } else {
+          setOldDataOS(oldData.result);
+          setOldDataModal(true);
+        }
       }
     } catch (error) {
       console.error("Login error", error);
@@ -133,10 +148,10 @@ export default function home() {
         setDataOS(null);
       } else {
         setDataOS(data.result);
+        setNovaLokacija(String(data.result.lokacija_inv));
       }
     } catch (error) {
-      console.error("Login error", error);
-      1;
+      console.error("Napaka pri povezavzi", error);
     }
   };
 
@@ -158,7 +173,7 @@ export default function home() {
       } else {
         showToast({
           type: "success",
-          text1: "Podatki uspešno poslani",
+          text1: "Podatki uspešno poslani ✅",
         });
         const successData = await getOSinfo(sendData.stev);
         try {
@@ -177,12 +192,39 @@ export default function home() {
     }
   };
 
+  const handlePopisan = (choice: boolean) => {
+    if (choice === true) {
+      setSendData({
+        stev: numberOS,
+        lokacija: Number(novaLokacija),
+        stev_old: oldNumberOS,
+        naziv_inv: newNaziv,
+      });
+      sendingData();
+      setPopisanModal(false);
+    }
+
+    if (choice === false) {
+      setPopisanModal(false);
+    }
+  };
+
   const potrditev = async () => {
     let testLocation = await locationCheck(Number(novaLokacija));
+
+    if (dataOS?.popisan === "D") {
+      // showToast({
+      //   type: "error",
+      //   text1: "OS je že popisan",
+      // });
+      setPopisanModal(true);
+      return;
+    }
+
     if (testLocation === false) {
       showToast({
         type: "error",
-        text1: "NAPAKA",
+        text1: "NAPAKA ❌",
         text2: "Lokacija ne obstaja",
       });
       return;
@@ -190,7 +232,8 @@ export default function home() {
     if (dataOS?.osstanje_ime === null && newNaziv === "") {
       showToast({
         type: "error",
-        text1: "Izberi naziv",
+        text1: "NAPAKA ❌",
+        text2: "Vnesi naziv OS",
       });
       return;
     }
@@ -212,14 +255,6 @@ export default function home() {
         naziv_inv: newNaziv,
       });
       sendingData();
-    }
-
-    if (dataOS?.popisan === "D") {
-      showToast({
-        type: "error",
-        text1: "OS je že popisan",
-      });
-      return;
     }
   };
 
@@ -251,6 +286,12 @@ export default function home() {
               />
             </View>
           </View>
+
+          {dataOS === null && (
+            <Text className="text-center text-red-500 my-4 text-xl font-pbold">
+              Številka ne obstaja
+            </Text>
+          )}
 
           {/* STARO */}
           {/* {dataOS ? (
@@ -468,6 +509,7 @@ export default function home() {
                 : false
             }
           />
+          <PopisanModal visible={popisanModal} onChoice={handlePopisan} />
         </View>
       </ScrollView>
       <Toast />
