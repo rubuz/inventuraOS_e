@@ -15,10 +15,10 @@ export default function PopisanModal({ visible, onChoice }: PopisanModalProps) {
     >
       <View className="bg-slate-100 rounded-2xl border-[1px] p-2 w-4/5 mx-auto my-auto flex-col">
         <Text className="font-psemibold text-center">
-          Osnovno sredstvo že popisano
+          Osnovno sredstvo je že popisano
         </Text>
         <Text className="font-pregular text-center mb-2">
-          Ali želite OS popisani še enkrat?
+          Ali želite OS popisati še enkrat z novimi podatki?
         </Text>
         <View className="flex-row justify-evenly w-full">
           <TouchableOpacity

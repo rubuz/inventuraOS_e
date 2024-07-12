@@ -1,5 +1,4 @@
 import {
-  DeviceEventEmitter,
   Image,
   ScrollView,
   Text,
@@ -21,7 +20,6 @@ import {
   PotrdiloResponse,
   sendParams,
 } from "../types/types";
-import DetailCard from "./components/DetailCard";
 import Toast from "react-native-toast-message";
 import { showToast } from "./components/toast";
 import CustomButton from "./components/CustomButton";
@@ -63,22 +61,25 @@ export default function home() {
 
   const lokacijaInputRef = useRef<TextInput>(null);
 
-  const handleGetNazivi = async () => {
-    try {
-      const dataNazivi = await getNazivi();
-      setNazivi(dataNazivi.result);
-    } catch (error) {
-      console.error("Get nazivi error", error);
-    }
-  };
-
   useEffect(() => {
     if (dataOS?.popisan === "D") {
-      setNovaLokacija(String(dataOS?.lokacija_inv));
+      setSendData({
+        stev: numberOS,
+        lokacija: dataOS?.lokacija_inv ? dataOS?.lokacija_inv : 0,
+        stev_old: dataOS?.stev_old ? dataOS?.stev_old : 0,
+        naziv_inv: dataOS?.naziv_inv ? dataOS?.naziv_inv : "",
+      });
+      setOldNumberOS(dataOS?.stev_old ? dataOS?.stev_old : 0);
     } else {
       setNewNaziv("");
       setOldDataOS(undefined);
       setNovaLokacija(null);
+      setSendData({
+        stev: numberOS,
+        lokacija: dataOS?.lokacija_inv ? dataOS?.lokacija_inv : 0,
+        stev_old: dataOS?.stev_old ? dataOS?.stev_old : 0,
+        naziv_inv: dataOS?.naziv_inv ? dataOS?.naziv_inv : "",
+      });
     }
   }, [dataOS]);
 
@@ -87,8 +88,38 @@ export default function home() {
   }, []);
 
   useEffect(() => {
-    setSendData((prev) => ({ ...prev, lokacija: Number(novaLokacija) }));
-  }, [dataOS?.lokacija_inv]);
+    console.log(sendData);
+  }, [sendData]);
+
+  const handlePopisan = (choice: boolean) => {
+    if (choice === true) {
+      // setSendData({
+      //   stev: numberOS,
+      //   lokacija: Number(novaLokacija),
+      //   stev_old: oldNumberOS,
+      //   naziv_inv: newNaziv,
+      // });
+      sendingData();
+      setPopisanModal(false);
+    }
+
+    if (choice === false) {
+      setPopisanModal(false);
+    }
+  };
+
+  // useEffect(() => {
+  //   setSendData((prev) => ({ ...prev, lokacija: Number(novaLokacija) }));
+  // }, [dataOS?.lokacija_inv]);
+
+  const handleGetNazivi = async () => {
+    try {
+      const dataNazivi = await getNazivi();
+      setNazivi(dataNazivi.result);
+    } catch (error) {
+      console.error("Get nazivi error", error);
+    }
+  };
 
   const handleGetLastnikOld = async () => {
     try {
@@ -121,6 +152,19 @@ export default function home() {
     }
   };
 
+  const handleOldOS = () => {
+    setSendData({ ...sendData, stev_old: oldNumberOS });
+    handleGetLastnikOld();
+  };
+
+  const handleNewNaziv = (naziv: string) => {
+    if (naziv === "Naziv starega OS") {
+      setSendData({ ...sendData, naziv_inv: String(oldDataOS?.osstanje_ime) });
+    } else {
+      setSendData({ ...sendData, naziv_inv: naziv });
+    }
+  };
+
   const locationCheck = async (location: number) => {
     try {
       const data = await checkLocation(location);
@@ -148,7 +192,18 @@ export default function home() {
         setDataOS(null);
       } else {
         setDataOS(data.result);
-        setNovaLokacija(String(data.result.lokacija_inv));
+        if (data.result.stev_old !== null) {
+          console.log("TESTETSDTTETS");
+          try {
+            const oldData: LastnikOSResponse = await getOSinfo(
+              data.result.stev_old
+            );
+            setOldNumberOS(data.result.stev_old);
+            setOldDataOS(oldData.result);
+          } catch (error) {
+            console.error("Login error", error);
+          }
+        }
       }
     } catch (error) {
       console.error("Napaka pri povezavzi", error);
@@ -167,7 +222,7 @@ export default function home() {
         }
         showToast({
           type: "error",
-          text1: "NAPAKA",
+          text1: "NAPAKA ❌",
           text2: errorMessage,
         });
       } else {
@@ -182,6 +237,10 @@ export default function home() {
             setDataOS(null);
           } else {
             setDataOS(successData.result);
+            setSendData((prev) => ({
+              ...prev,
+              lokacija: successData.result.lokacija_inv,
+            }));
           }
         } catch (error) {
           console.error("Login error", error);
@@ -192,34 +251,8 @@ export default function home() {
     }
   };
 
-  const handlePopisan = (choice: boolean) => {
-    if (choice === true) {
-      setSendData({
-        stev: numberOS,
-        lokacija: Number(novaLokacija),
-        stev_old: oldNumberOS,
-        naziv_inv: newNaziv,
-      });
-      sendingData();
-      setPopisanModal(false);
-    }
-
-    if (choice === false) {
-      setPopisanModal(false);
-    }
-  };
-
   const potrditev = async () => {
-    let testLocation = await locationCheck(Number(novaLokacija));
-
-    if (dataOS?.popisan === "D") {
-      // showToast({
-      //   type: "error",
-      //   text1: "OS je že popisan",
-      // });
-      setPopisanModal(true);
-      return;
-    }
+    let testLocation = await locationCheck(Number(sendData.lokacija));
 
     if (testLocation === false) {
       showToast({
@@ -229,7 +262,13 @@ export default function home() {
       });
       return;
     }
-    if (dataOS?.osstanje_ime === null && newNaziv === "") {
+
+    if (dataOS?.popisan === "D") {
+      setPopisanModal(true);
+      return;
+    }
+
+    if (dataOS?.osstanje_ime === null && sendData.naziv_inv === "") {
       showToast({
         type: "error",
         text1: "NAPAKA ❌",
@@ -239,21 +278,15 @@ export default function home() {
     }
     if (newNaziv === "Naziv starega OS") {
       if (oldDataOS?.osstanje_ime !== undefined) {
-        setSendData({
-          stev: numberOS,
-          lokacija: Number(novaLokacija),
-          stev_old: oldNumberOS,
-          naziv_inv: oldDataOS?.osstanje_ime,
-        });
+        // setSendData({
+        //   stev: numberOS,
+        //   lokacija: Number(novaLokacija),
+        //   stev_old: oldNumberOS,
+        //   naziv_inv: oldDataOS?.osstanje_ime,
+        // });
         sendingData();
       }
     } else {
-      setSendData({
-        stev: numberOS,
-        lokacija: Number(novaLokacija),
-        stev_old: oldNumberOS,
-        naziv_inv: newNaziv,
-      });
       sendingData();
     }
   };
@@ -293,33 +326,6 @@ export default function home() {
             </Text>
           )}
 
-          {/* STARO */}
-          {/* {dataOS ? (
-            dataOS.osstanje_ime === null ? (
-              <>
-                <DetailCard
-                  isNaziv={false}
-                  dataOS={dataOS}
-                  numberOS={numberOS}
-                  popisanoColor={dataOS?.popisan === "D" ? true : false}
-                />
-              </>
-            ) : (
-              <>
-                <DetailCard
-                  isNaziv={true}
-                  dataOS={dataOS}
-                  numberOS={numberOS}
-                  popisanoColor={dataOS?.popisan === "D" ? true : false}
-                />
-              </>
-            )
-          ) : dataOS === null ? (
-            <Text className="text-center text-red-500 my-4 text-xl font-pbold">
-              Številka ne obstaja
-            </Text>
-          ) : null} */}
-
           {/* NOV NAČIN */}
           <View
             className={`p-2 my-1 rounded-2xl ${
@@ -344,13 +350,15 @@ export default function home() {
                   <TextInput
                     className="text-sm w-full flex-col h-full items-center justify-center font-pregular ml-4"
                     keyboardType="numeric"
-                    placeholder={
-                      dataOS?.stev_old
-                        ? String(dataOS?.stev_old)
-                        : "Vnesi številko starega OS"
-                    }
+                    // placeholder={
+                    //   dataOS?.stev_old
+                    //     ? String(dataOS?.stev_old)
+                    //     : "Vnesi številko starega OS"
+                    // }
+                    showSoftInputOnFocus={false}
+                    value={String(oldNumberOS)}
                     onChangeText={(e) => setOldNumberOS(Number(e))}
-                    onSubmitEditing={() => handleGetLastnikOld()}
+                    onSubmitEditing={handleOldOS}
                   />
                 </View>
                 {oldDataOS?.osstanje_ime !== undefined && (
@@ -372,9 +380,13 @@ export default function home() {
                   }`}
                 >
                   <Picker
-                    selectedValue={newNaziv}
+                    selectedValue={
+                      sendData?.naziv_inv === dataOS?.stev_old_naziv
+                        ? "Naziv starega OS"
+                        : sendData?.naziv_inv
+                    }
                     onValueChange={(itemValue, itemIndex) =>
-                      setNewNaziv(itemValue)
+                      handleNewNaziv(itemValue)
                     }
                     placeholder="Izberi naziv"
                     style={{
@@ -466,15 +478,21 @@ export default function home() {
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
-                  clearTextOnFocus={true}
-                  value={novaLokacija === null ? "" : novaLokacija}
-                  onChangeText={(e) => setNovaLokacija(e)}
+                  value={String(sendData.lokacija)}
+                  onChangeText={(e) =>
+                    setSendData({ ...sendData, lokacija: Number(e) })
+                  }
                 />
                 <TouchableOpacity
                   className={`h-8 flex-row items-center justify-center ${
                     dataOS?.popisan === "D" ? "bg-green-300" : "bg-red-300"
                   } rounded-[10px] px-2 absolute -right-[1px] z-10`}
-                  onPress={() => setNovaLokacija(String(dataOS?.lokacija))}
+                  onPress={() =>
+                    setSendData({
+                      ...sendData,
+                      lokacija: Number(dataOS?.lokacija),
+                    })
+                  }
                   disabled={dataOS?.lokacija === null ? true : false}
                 >
                   <Image
@@ -501,10 +519,9 @@ export default function home() {
             handlePress={potrditev}
             containerStyles="bg-[#002d5f]"
             disable={
-              novaLokacija === "0" ||
-              novaLokacija === null ||
-              novaLokacija === "" ||
-              dataOS === (null || undefined)
+              dataOS === (null || undefined) ||
+              sendData.lokacija === 0 ||
+              sendData.lokacija === null
                 ? true
                 : false
             }
