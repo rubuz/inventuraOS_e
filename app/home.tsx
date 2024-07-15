@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,6 +27,8 @@ import CustomButton from "./components/CustomButton";
 import { Picker } from "@react-native-picker/picker";
 import OldOSModal from "./components/OldOSModal";
 import PopisanModal from "./components/PopisanModal";
+import LogoffModal from "./components/LogoffModal";
+import { router, useLocalSearchParams } from "expo-router";
 
 const chevronLeft = require("../assets/images/chevron-left.png");
 
@@ -36,6 +39,8 @@ type NazivItem = {
 type NaziviResponse = NazivItem[];
 
 export default function home() {
+  const { user } = useLocalSearchParams();
+
   const [numberOS, setNumberOS] = useState<number>(0);
   const [dataOS, setDataOS] = useState<LastnikOSResult | null | undefined>(
     undefined
@@ -44,6 +49,7 @@ export default function home() {
   const [oldDataOS, setOldDataOS] = useState<
     LastnikOSResult | null | undefined
   >(undefined);
+  const [displayNubmer, setDisplayNumber] = useState<string>("0");
   const [newNaziv, setNewNaziv] = useState<string>("");
   const [nazivi, setNazivi] = useState<NaziviResponse>([]);
   const [novaLokacija, setNovaLokacija] = useState<string | null>("");
@@ -57,9 +63,26 @@ export default function home() {
   });
   const [oldDataModal, setOldDataModal] = useState<boolean>(false);
   const [popisanModal, setPopisanModal] = useState<boolean>(false);
+  const [logoffModal, setLogoffModal] = useState<boolean>(false);
   const [sendAgain, setSendAgain] = useState<boolean>(false);
 
   const lokacijaInputRef = useRef<TextInput>(null);
+  const numberOSInputRef = useRef<TextInput>(null);
+  const oldNumberOSInptuRef = useRef<TextInput>(null);
+
+  // BACKHANDLER
+  useEffect(() => {
+    const backAction = () => {
+      setLogoffModal(true);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => backHandler.remove();
+  }, []);
 
   useEffect(() => {
     if (dataOS?.popisan === "D") {
@@ -80,6 +103,7 @@ export default function home() {
         stev_old: dataOS?.stev_old ? dataOS?.stev_old : 0,
         naziv_inv: dataOS?.naziv_inv ? dataOS?.naziv_inv : "",
       });
+      setOldNumberOS(dataOS?.stev_old ? dataOS?.stev_old : 0);
     }
   }, [dataOS]);
 
@@ -109,6 +133,17 @@ export default function home() {
     }
   };
 
+  const handleLogoff = (choice: boolean) => {
+    if (choice === true) {
+      setLogoffModal(false);
+      router.push("/");
+    }
+
+    if (choice === false) {
+      setLogoffModal(false);
+    }
+  };
+
   // useEffect(() => {
   //   setSendData((prev) => ({ ...prev, lokacija: Number(novaLokacija) }));
   // }, [dataOS?.lokacija_inv]);
@@ -133,6 +168,7 @@ export default function home() {
           text1: "NAPAKA ❌",
           text2: "Ta številka OS ne obstaja",
         });
+        oldNumberOSInptuRef.current && oldNumberOSInptuRef.current.focus();
       } else {
         if (oldData.result.popisan === "D") {
           showToast({
@@ -143,6 +179,7 @@ export default function home() {
           setOldDataOS(null);
           setOldNumberOS(0);
           setOldDataModal(false);
+          oldNumberOSInptuRef.current && oldNumberOSInptuRef.current.focus();
         } else {
           setOldDataOS(oldData.result);
           setOldDataModal(true);
@@ -161,8 +198,10 @@ export default function home() {
   const handleNewNaziv = (naziv: string) => {
     if (naziv === "Naziv starega OS") {
       setSendData({ ...sendData, naziv_inv: String(oldDataOS?.osstanje_ime) });
+      lokacijaInputRef.current && lokacijaInputRef.current.focus();
     } else {
       setSendData({ ...sendData, naziv_inv: naziv });
+      lokacijaInputRef.current && lokacijaInputRef.current.focus();
     }
   };
 
@@ -231,6 +270,7 @@ export default function home() {
           type: "success",
           text1: "Podatki uspešno poslani ✅",
         });
+        numberOSInputRef.current && numberOSInputRef.current.focus();
         const successData = await getOSinfo(sendData.stev);
         try {
           if (successData.result === null) {
@@ -307,12 +347,18 @@ export default function home() {
               <TextInput
                 className="text-xl text-center w-full flex-col h-full items-center justify-center font-pbold tracking-widest"
                 keyboardType="numeric"
+                ref={numberOSInputRef}
                 autoFocus={true}
                 clearTextOnFocus={true}
                 showSoftInputOnFocus={false}
                 value={numberOS === 0 ? "" : String(numberOS)}
-                onChangeText={(e) => setNumberOS(Number(e))}
+                onChangeText={(e) => {
+                  if (/^\d*$/.test(e) || e === "") {
+                    setNumberOS(e === "" ? 0 : Number(e));
+                  }
+                }}
                 onSubmitEditing={() => {
+                  setDisplayNumber(String(numberOS));
                   handleGetLastnik();
                   lokacijaInputRef.current && lokacijaInputRef.current.focus();
                 }}
@@ -358,6 +404,7 @@ export default function home() {
                     // }
                     showSoftInputOnFocus={false}
                     value={String(oldNumberOS)}
+                    ref={oldNumberOSInptuRef}
                     onChangeText={(e) => setOldNumberOS(Number(e))}
                     onSubmitEditing={handleOldOS}
                   />
@@ -447,9 +494,12 @@ export default function home() {
               </>
             )}
             {dataOS?.osstanje_ime !== null && (
-              <Text className="text-lg font-pmedium">
-                {dataOS?.osstanje_ime}
-              </Text>
+              <>
+                <Text>{displayNubmer}</Text>
+                <Text className="text-lg font-pmedium">
+                  {dataOS?.osstanje_ime}
+                </Text>
+              </>
             )}
             <Text className="text-xs font-psemibold mt-1">Lastnik</Text>
             <View className="w-full flex flex-row justify-between">
@@ -528,6 +578,11 @@ export default function home() {
             }
           />
           <PopisanModal visible={popisanModal} onChoice={handlePopisan} />
+          <LogoffModal
+            visible={logoffModal}
+            onChoice={handleLogoff}
+            user={String(user)}
+          />
         </View>
       </ScrollView>
       <Toast />

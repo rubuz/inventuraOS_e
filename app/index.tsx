@@ -60,7 +60,10 @@ export default function App() {
           return;
         } else {
           console.log("Login successful", data.result[0].displayname);
-          router.push("/home");
+          router.push({
+            pathname: "/home",
+            params: { user: data.result[0].displayname },
+          });
         }
       }
     } catch (error) {
@@ -74,15 +77,15 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Place your action here. For example:
-      router.push("/home");
-      // Or any other logic you want to execute after 2 seconds
-    }, 500);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     // Place your action here. For example:
+  //     router.push("/home");
+  //     // Or any other logic you want to execute after 2 seconds
+  //   }, 500);
 
-    return () => clearTimeout(timer); // Cleanup the timer on component unmount
-  }, []);
+  //   return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  // }, []);
 
   // const login = async (user, password) => {
   //   setIsSubmitting(true);
