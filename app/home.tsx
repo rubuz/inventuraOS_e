@@ -89,6 +89,7 @@ export default function home() {
 
   useEffect(() => {
     console.log(sendData);
+    console.log(oldDataOS);
   }, [sendData]);
 
   const handlePopisan = (choice: boolean) => {
@@ -381,7 +382,7 @@ export default function home() {
                 >
                   <Picker
                     selectedValue={
-                      sendData?.naziv_inv === dataOS?.stev_old_naziv
+                      sendData?.naziv_inv === oldDataOS?.osstanje_ime
                         ? "Naziv starega OS"
                         : sendData?.naziv_inv
                     }
