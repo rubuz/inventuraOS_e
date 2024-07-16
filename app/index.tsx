@@ -11,7 +11,7 @@ import CustomButton from "./components/CustomButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useRef, useState } from "react";
 import { login } from "../api/apiService";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Form, LoginResponse, ShowToastParams } from "../types/types";
 import { showToast, toastConfig } from "./components/toast";
 import Toast from "react-native-toast-message";
@@ -19,6 +19,8 @@ import Toast from "react-native-toast-message";
 const logo = require("../assets/images/adria.jpg");
 
 export default function App() {
+  const { user, userDB } = useLocalSearchParams();
+
   const [form, setForm] = useState<Form>({
     user: "",
     password: "",
@@ -26,6 +28,7 @@ export default function App() {
   const [isSubmiting, setIsSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<string>("");
 
   const passwordInputRef = useRef<TextInput>(null);
 
@@ -58,7 +61,10 @@ export default function App() {
           console.log("Login successful", data.result[0].displayname);
           router.push({
             pathname: "/home",
-            params: { user: data.result[0].displayname },
+            params: {
+              user: data.result[0].displayname,
+              userDB: form.user.toUpperCase(),
+            },
           });
         }
       }
@@ -74,14 +80,19 @@ export default function App() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push({
-        pathname: "/home",
-      });
-    }, 500); // 500 milliseconds = 0.5 seconds
-
-    return () => clearTimeout(timer); // Cleanup the timer
+    setForm({ ...form, user: String(userDB) });
+    passwordInputRef.current && passwordInputRef.current.focus();
   }, []);
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     router.push({
+  //       pathname: "/home",
+  //     });
+  //   }, 500); // 500 milliseconds = 0.5 seconds
+
+  //   return () => clearTimeout(timer); // Cleanup the timer
+  // }, []);
 
   return (
     <SafeAreaView className="bg-white h-full">
@@ -107,13 +118,16 @@ export default function App() {
                 value={form.user}
                 showSoftInputOnFocus={false}
                 clearTextOnFocus={true}
-                autoFocus={true}
+                autoFocus={form.user === "" ? true : false}
                 placeholderTextColor={"#A1A1AA"}
                 onChangeText={(e: string) => setForm({ ...form, user: e })}
                 onSubmitEditing={() =>
                   passwordInputRef.current && passwordInputRef.current.focus()
                 }
                 returnKeyType="next"
+                onFocus={() => {
+                  setForm({ ...form, user: "" });
+                }}
               />
             </View>
           </View>
@@ -135,6 +149,9 @@ export default function App() {
                 secureTextEntry={true}
                 returnKeyType="go"
                 onSubmitEditing={handleLogin}
+                onFocus={() => {
+                  setForm({ ...form, password: "" });
+                }}
               />
               <TouchableOpacity
                 onPressIn={() => setShowPassword(true)}

@@ -39,7 +39,7 @@ type NazivItem = {
 type NaziviResponse = NazivItem[];
 
 export default function home() {
-  const { user } = useLocalSearchParams();
+  const { user, userDB } = useLocalSearchParams();
 
   const [numberOS, setNumberOS] = useState<number>(0);
   const [dataOS, setDataOS] = useState<LastnikOSResult | null | undefined>(
@@ -137,7 +137,10 @@ export default function home() {
   const handleLogoff = (choice: boolean) => {
     if (choice === true) {
       setLogoffModal(false);
-      router.push("/");
+      router.push({
+        pathname: "/",
+        params: { user: user, userDB: userDB },
+      });
     }
 
     if (choice === false) {
@@ -520,7 +523,7 @@ export default function home() {
             <Text className="text-xs mt-1 font-psemibold">Lokacija</Text>
             <View className="w-full flex flex-row justify-between">
               <Text className="font-pregular text-base">
-                {dataOS?.lokacija === null ? "/" : dataOS?.lokacija}
+                {!dataOS?.lokacija ? "" : dataOS?.lokacija}
               </Text>
               <Text>{dataOS?.obrat_ime}</Text>
             </View>
