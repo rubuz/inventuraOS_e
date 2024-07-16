@@ -93,6 +93,7 @@ export default function home() {
         naziv_inv: dataOS?.naziv_inv ? dataOS?.naziv_inv : "",
       });
       setOldNumberOS(dataOS?.stev_old ? dataOS?.stev_old : 0);
+      setOldDataOS(undefined);
     } else {
       setNewNaziv("");
       setOldDataOS(undefined);
@@ -316,6 +317,7 @@ export default function home() {
         text1: "NAPAKA",
         text2: "Vnesi naziv OS",
       });
+
       return;
     }
     if (newNaziv === "Naziv starega OS") {
@@ -405,9 +407,13 @@ export default function home() {
                     //     : "Vnesi številko starega OS"
                     // }
                     showSoftInputOnFocus={false}
-                    value={String(oldNumberOS)}
+                    value={oldNumberOS === 0 ? "" : String(oldNumberOS)}
                     ref={oldNumberOSInptuRef}
-                    onChangeText={(e) => setOldNumberOS(Number(e))}
+                    onChangeText={(e) => {
+                      if (/^\d*$/.test(e) || e === "") {
+                        setOldNumberOS(e === "" ? 0 : Number(e));
+                      }
+                    }}
                     onSubmitEditing={handleOldOS}
                   />
                 </View>
@@ -533,10 +539,14 @@ export default function home() {
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
-                  value={String(sendData.lokacija)}
-                  onChangeText={(e) =>
-                    setSendData({ ...sendData, lokacija: Number(e) })
+                  value={
+                    sendData.lokacija === 0 ? "" : String(sendData.lokacija)
                   }
+                  onChangeText={(e) => {
+                    if (/^\d*$/.test(e) || e === "") {
+                      setSendData({ ...sendData, lokacija: Number(e) });
+                    }
+                  }}
                 />
                 <TouchableOpacity
                   className={`h-8 flex-row items-center justify-center ${
