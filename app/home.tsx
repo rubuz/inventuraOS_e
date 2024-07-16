@@ -369,7 +369,7 @@ export default function home() {
           </View>
 
           {dataOS === null && (
-            <Text className="text-center text-red-500 my-4 text-xl font-pbold">
+            <Text className="text-center text-red-700 my-4 text-lg font-psemibold">
               Številka ne obstaja
             </Text>
           )}
@@ -380,7 +380,8 @@ export default function home() {
               dataOS?.popisan === "D" ? "bg-green-200" : "bg-red-200"
             }`}
           >
-            {dataOS?.osstanje_ime === null && (
+            {(dataOS?.osstanje_ime === null ||
+              dataOS?.spec1 === "ODPRTO ZA POTREBE INVENTURE") && (
               <>
                 {/* <Text className="text-center mb-2 text-base font-psemibold">
               Osnovno sredstvo nima naziva
@@ -528,7 +529,7 @@ export default function home() {
               >
                 <TextInput
                   ref={lokacijaInputRef}
-                  editable={dataOS?.lokacija === null ? true : false}
+                  editable={dataOS !== null ? true : false}
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
