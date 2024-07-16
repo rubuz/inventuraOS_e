@@ -1,8 +1,14 @@
-import { Modal, Text, TouchableOpacity, View } from "react-native";
+import { View, Text, Modal, TouchableOpacity } from "react-native";
 import React from "react";
 import { ModalProps } from "../../types/types";
 
-export default function PopisanModal({ visible, onChoice }: ModalProps) {
+interface LogoffModalProps {
+  visible: boolean;
+  onChoice: (choice: boolean) => void;
+  user: string;
+}
+
+const LogoffModal = ({ visible, onChoice, user }: LogoffModalProps) => {
   return (
     <Modal
       className="relative flex-row items-center justify-center"
@@ -10,11 +16,11 @@ export default function PopisanModal({ visible, onChoice }: ModalProps) {
       visible={visible}
     >
       <View className="bg-slate-100 rounded-2xl border-[1px] p-2 w-4/5 mx-auto my-auto flex-col">
-        <Text className="font-psemibold text-center">
-          Osnovno sredstvo je že popisano
+        <Text className="font-pregular text-center">
+          Vpisani ste kot: <Text className="font-pbold">{user}</Text>
         </Text>
-        <Text className="font-pregular text-center mb-2">
-          Ali želite OS popisati še enkrat z novimi podatki?
+        <Text className="font-psemibold text-center">
+          Ali se želite odjaviti?
         </Text>
         <View className="flex-row justify-evenly w-full">
           <TouchableOpacity
@@ -33,4 +39,6 @@ export default function PopisanModal({ visible, onChoice }: ModalProps) {
       </View>
     </Modal>
   );
-}
+};
+
+export default LogoffModal;

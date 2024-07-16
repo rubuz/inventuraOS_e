@@ -66,3 +66,8 @@ export interface ShowToastParams {
 export interface PotrdiloResponse {
   error: Error;
 }
+
+export interface ModalProps {
+  visible: boolean;
+  onChoice: (choice: boolean) => void;
+}
