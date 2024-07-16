@@ -1,9 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import {
-  DeviceEventEmitter,
   Image,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -15,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { login } from "../api/apiService";
 import { router } from "expo-router";
 import { Form, LoginResponse, ShowToastParams } from "../types/types";
-import { showToast } from "./components/toast";
+import { showToast, toastConfig } from "./components/toast";
 import Toast from "react-native-toast-message";
 
 const logo = require("../assets/images/adria.jpg");
@@ -40,8 +38,6 @@ export default function App() {
         password: form.password,
       });
       if (data.result === null) {
-        // console.error(data.error.text);
-        // console.log("FAIL");
         showToast({
           type: "error",
           text1: "Nepravilno uporabniško ime ali geslo!",
@@ -77,85 +73,15 @@ export default function App() {
     }
   };
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     // Place your action here. For example:
-  //     router.push("/home");
-  //     // Or any other logic you want to execute after 2 seconds
-  //   }, 500);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.push({
+        pathname: "/home",
+      });
+    }, 500); // 500 milliseconds = 0.5 seconds
 
-  //   return () => clearTimeout(timer); // Cleanup the timer on component unmount
-  // }, []);
-
-  // const login = async (user, password) => {
-  //   setIsSubmitting(true);
-  //   setLoginError("");
-  //   try {
-  //     const response = await axios.post(
-  //       API_URL_LOGIN,
-  //       {
-  //         parameters: {
-  //           username: user,
-  //           password: password,
-  //         },
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: API_LOGIN_HEADER,
-  //         },
-  //       }
-  //     );
-  //     if (response.data.result === null) {
-  //       setLoginError(response.data.error.text);
-  //       console.log("FAKIN FAIL");
-  //     } else {
-  //       console.log("Login successful", response.data.result);
-
-  //     }
-  //   } catch (error) {
-  //     console.error("Login error", error);
-  //     setLoginError("Napaka pri prijavi");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
-  // const login = async (user, password) => {
-  //   setIsSubmitting(true);
-  //   setLoginError("");
-  //   try {
-  //     const response = await fetch(API_URL_LOGIN, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: API_LOGIN_HEADER,
-  //       },
-  //       body: JSON.stringify({
-  //         parameters: {
-  //           username: user,
-  //           password: password,
-  //         },
-  //       }),
-  //     });
-  //     const data = await response.json();
-  //     console.log("Data", data);
-  //     if (data.error.error === false) {
-  //       setLoginError(data.error.text);
-  //       console.log("Login error", data.error.text);
-  //     } else {
-  //       console.log("Login successful", data.result);
-  //     }
-  //   } catch (error) {
-  //     console.error("Login error", error);
-  //     setLoginError("Napaka pri prijavi");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
-  // const submit = () => {
-  //   login(form.user, form.password);
-  // };
+    return () => clearTimeout(timer); // Cleanup the timer
+  }, []);
 
   return (
     <SafeAreaView className="bg-white h-full">
@@ -228,7 +154,7 @@ export default function App() {
             isLoading={isSubmiting}
           />
         </View>
-        <Toast />
+        <Toast config={toastConfig} />
       </ScrollView>
     </SafeAreaView>
   );

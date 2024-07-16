@@ -9,6 +9,9 @@ import {
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
+import Toast from "react-native-toast-message";
+import { Picker } from "@react-native-picker/picker";
 import {
   checkLocation,
   getNazivi,
@@ -21,14 +24,11 @@ import {
   PotrdiloResponse,
   sendParams,
 } from "../types/types";
-import Toast from "react-native-toast-message";
-import { showToast } from "./components/toast";
 import CustomButton from "./components/CustomButton";
-import { Picker } from "@react-native-picker/picker";
 import OldOSModal from "./components/OldOSModal";
 import PopisanModal from "./components/PopisanModal";
 import LogoffModal from "./components/LogoffModal";
-import { router, useLocalSearchParams } from "expo-router";
+import { showToast, toastConfig } from "./components/toast";
 
 const chevronLeft = require("../assets/images/chevron-left.png");
 
@@ -49,7 +49,7 @@ export default function home() {
   const [oldDataOS, setOldDataOS] = useState<
     LastnikOSResult | null | undefined
   >(undefined);
-  const [displayNubmer, setDisplayNumber] = useState<string>("0");
+  const [displayNubmer, setDisplayNumber] = useState<string>("");
   const [newNaziv, setNewNaziv] = useState<string>("");
   const [nazivi, setNazivi] = useState<NaziviResponse>([]);
   const [novaLokacija, setNovaLokacija] = useState<string | null>("");
@@ -165,7 +165,7 @@ export default function home() {
         setOldDataOS(null);
         showToast({
           type: "error",
-          text1: "NAPAKA ❌",
+          text1: "NAPAKA",
           text2: "Ta številka OS ne obstaja",
         });
         oldNumberOSInptuRef.current && oldNumberOSInptuRef.current.focus();
@@ -173,7 +173,7 @@ export default function home() {
         if (oldData.result.popisan === "D") {
           showToast({
             type: "error",
-            text1: "NAPAKA ❌",
+            text1: "NAPAKA",
             text2: "Osnovno sredstvo je že popisano",
           });
           setOldDataOS(null);
@@ -229,6 +229,7 @@ export default function home() {
       const data: LastnikOSResponse = await getOSinfo(numberOS);
       if (data.result === null) {
         console.log("Številka ne obstaja");
+        setDisplayNumber("");
         setDataOS(null);
       } else {
         setDataOS(data.result);
@@ -262,13 +263,13 @@ export default function home() {
         }
         showToast({
           type: "error",
-          text1: "NAPAKA ❌",
+          text1: "NAPAKA",
           text2: errorMessage,
         });
       } else {
         showToast({
           type: "success",
-          text1: "Podatki uspešno poslani ✅",
+          text1: "Podatki uspešno poslani",
         });
         numberOSInputRef.current && numberOSInputRef.current.focus();
         const successData = await getOSinfo(sendData.stev);
@@ -298,7 +299,7 @@ export default function home() {
     if (testLocation === false) {
       showToast({
         type: "error",
-        text1: "NAPAKA ❌",
+        text1: "NAPAKA",
         text2: "Lokacija ne obstaja",
       });
       return;
@@ -312,7 +313,7 @@ export default function home() {
     if (dataOS?.osstanje_ime === null && sendData.naziv_inv === "") {
       showToast({
         type: "error",
-        text1: "NAPAKA ❌",
+        text1: "NAPAKA",
         text2: "Vnesi naziv OS",
       });
       return;
@@ -493,9 +494,10 @@ export default function home() {
                 />
               </>
             )}
+
             {dataOS?.osstanje_ime !== null && (
               <>
-                <Text>{displayNubmer}</Text>
+                {displayNubmer !== "" && <Text>{displayNubmer}</Text>}
                 <Text className="text-lg font-pmedium">
                   {dataOS?.osstanje_ime}
                 </Text>
@@ -526,6 +528,7 @@ export default function home() {
               >
                 <TextInput
                   ref={lokacijaInputRef}
+                  editable={dataOS?.lokacija === null ? true : false}
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
@@ -585,7 +588,7 @@ export default function home() {
           />
         </View>
       </ScrollView>
-      <Toast />
+      <Toast config={toastConfig} />
     </SafeAreaView>
   );
 }
