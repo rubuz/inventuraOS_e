@@ -7,19 +7,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CustomButton from "./components/CustomButton";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CustomButton from "./components/CustomButton";
+import { router, useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useEffect, useRef, useState } from "react";
 import { login } from "../api/apiService";
-import { router, useLocalSearchParams } from "expo-router";
 import { Form, LoginResponse, ShowToastParams } from "../types/types";
 import { showToast, toastConfig } from "./components/toast";
-import Toast from "react-native-toast-message";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const logo = require("../assets/images/adria.jpg");
 
 export default function App() {
   const { user, userDB } = useLocalSearchParams();
+  let userData = "";
 
   const [form, setForm] = useState<Form>({
     user: "",
@@ -31,6 +35,15 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<string>("");
 
   const passwordInputRef = useRef<TextInput>(null);
+
+  const storeData = async (value: string) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem("user", jsonValue);
+    } catch (error) {
+      console.log("Error saving user to AsyncStorage", error);
+    }
+  };
 
   const handleLogin = async () => {
     setIsSubmitting(true);
@@ -58,7 +71,8 @@ export default function App() {
           });
           return;
         } else {
-          console.log("Login successful", data.result[0].displayname);
+          console.log("Login successful", form.user.toUpperCase());
+          storeData(form.user.toUpperCase());
           router.push({
             pathname: "/home",
             params: {
@@ -78,6 +92,23 @@ export default function App() {
       setIsSubmitting(false);
     }
   };
+
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("user");
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (error) {
+      console.log("Error getting user from AsyncStorage", error);
+    }
+  };
+
+  useEffect(() => {
+    // Using an immediately-invoked function expression (IIFE)
+    (async () => {
+      let userData = await getData();
+      console.log("User from AsyncStorage", userData);
+    })();
+  }, [form]);
 
   useEffect(() => {
     setForm({ ...form, user: String(userDB) });
@@ -115,10 +146,10 @@ export default function App() {
             <View className="w-full h-[50px] px-4 pl-6 bg-white border-2 border-slate-600 rounded-2xl focus:border-blue-70 flex-row items-center">
               <TextInput
                 className="flex-1 font-psemibold text-base"
-                value={form.user}
+                value={userData !== "" ? userData : form.user}
                 showSoftInputOnFocus={false}
                 clearTextOnFocus={true}
-                autoFocus={form.user === "" ? true : false}
+                autoFocus={userData === "" ? true : false}
                 placeholderTextColor={"#A1A1AA"}
                 onChangeText={(e: string) => setForm({ ...form, user: e })}
                 onSubmitEditing={() =>
