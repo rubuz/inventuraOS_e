@@ -238,7 +238,12 @@ export default function home() {
         setDataOS(null);
       } else {
         setDataOS(data.result);
-        lokacijaInputRef.current && lokacijaInputRef.current.focus();
+        if (data.result.popisan === "D") {
+          numberOSInputRef.current && numberOSInputRef.current.focus();
+        } else {
+          lokacijaInputRef.current && lokacijaInputRef.current.focus();
+        }
+
         setDisableBtn(false);
         if (data.result.stev_old !== null) {
           console.log("TESTETSDTTETS");
