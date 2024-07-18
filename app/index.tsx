@@ -23,8 +23,6 @@ const logo = require("../assets/images/adria.jpg");
 
 export default function App() {
   const { user, userDB } = useLocalSearchParams();
-  let userData = "";
-
   const [form, setForm] = useState<Form>({
     user: "",
     password: "",
@@ -44,6 +42,23 @@ export default function App() {
       console.log("Error saving user to AsyncStorage", error);
     }
   };
+
+  const getData = async (): Promise<void> => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("user");
+      if (jsonValue != null) {
+        setCurrentUser(JSON.parse(jsonValue));
+      } else {
+        setCurrentUser("");
+      }
+    } catch (error) {
+      console.log("Error getting user from AsyncStorage", error);
+    }
+  };
+
+  useEffect(() => {
+    setForm({ ...form, user: String(userDB) });
+  }, []);
 
   const handleLogin = async () => {
     setIsSubmitting(true);
@@ -72,7 +87,7 @@ export default function App() {
           return;
         } else {
           console.log("Login successful", form.user.toUpperCase());
-          storeData(form.user.toUpperCase());
+          await storeData(form.user.toUpperCase());
           router.push({
             pathname: "/home",
             params: {
@@ -93,37 +108,28 @@ export default function App() {
     }
   };
 
-  const getData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem("user");
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch (error) {
-      console.log("Error getting user from AsyncStorage", error);
+  const handleCurrentUser = () => {
+    if (currentUser === "") {
+      return form.user;
+    } else {
+      return currentUser;
     }
   };
 
-  useEffect(() => {
-    // Using an immediately-invoked function expression (IIFE)
-    (async () => {
-      let userData = await getData();
-      console.log("User from AsyncStorage", userData);
-    })();
-  }, [form]);
-
-  useEffect(() => {
-    setForm({ ...form, user: String(userDB) });
-    passwordInputRef.current && passwordInputRef.current.focus();
-  }, []);
-
   // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     router.push({
-  //       pathname: "/home",
-  //     });
-  //   }, 500); // 500 milliseconds = 0.5 seconds
-
-  //   return () => clearTimeout(timer); // Cleanup the timer
+  //   setForm({ ...form, user: String(userDB) });
+  //   passwordInputRef.current && passwordInputRef.current.focus();
   // }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.push({
+        pathname: "/home",
+      });
+    }, 500); // 500 milliseconds = 0.5 seconds
+
+    return () => clearTimeout(timer); // Cleanup the timer
+  }, []);
 
   return (
     <SafeAreaView className="bg-white h-full">
@@ -135,7 +141,7 @@ export default function App() {
             className="w-2/3 mx-auto h-9"
           />
           <Text className="text-2xl font-psemibold mt-5 text-center">
-            Invetura OS
+            Inventura OS
           </Text>
 
           {/* USER INPUT */}
@@ -146,12 +152,15 @@ export default function App() {
             <View className="w-full h-[50px] px-4 pl-6 bg-white border-2 border-slate-600 rounded-2xl focus:border-blue-70 flex-row items-center">
               <TextInput
                 className="flex-1 font-psemibold text-base"
-                value={userData !== "" ? userData : form.user}
+                value={form.user}
                 showSoftInputOnFocus={false}
                 clearTextOnFocus={true}
-                autoFocus={userData === "" ? true : false}
+                autoFocus={form.user === "" ? true : false}
                 placeholderTextColor={"#A1A1AA"}
-                onChangeText={(e: string) => setForm({ ...form, user: e })}
+                onChangeText={(e: string) => {
+                  setCurrentUser(e);
+                  setForm({ ...form, user: e });
+                }}
                 onSubmitEditing={() =>
                   passwordInputRef.current && passwordInputRef.current.focus()
                 }
@@ -177,7 +186,7 @@ export default function App() {
                 clearTextOnFocus={true}
                 placeholderTextColor={"#A1A1AA"}
                 onChangeText={(e: string) => setForm({ ...form, password: e })}
-                secureTextEntry={true}
+                secureTextEntry={!showPassword}
                 returnKeyType="go"
                 onSubmitEditing={handleLogin}
                 onFocus={() => {

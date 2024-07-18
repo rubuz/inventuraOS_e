@@ -252,13 +252,13 @@ const DetailCard = ({
               </Picker>
             </View>
 
-            <OldOSModal
+            {/* <OldOSModal
               visible={oldDataModal}
               oldDataOS={oldDataOS}
               onClose={() => {
                 setOldDataModal(false);
               }}
-            />
+            /> */}
           </>
         )}
         {dataOS?.osstanje_ime !== null && (
