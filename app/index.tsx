@@ -7,20 +7,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CustomButton from "./components/CustomButton";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CustomButton from "./components/CustomButton";
+import { router, useLocalSearchParams } from "expo-router";
+
 import { useEffect, useRef, useState } from "react";
 import { login } from "../api/apiService";
-import { router, useLocalSearchParams } from "expo-router";
 import { Form, LoginResponse, ShowToastParams } from "../types/types";
 import { showToast, toastConfig } from "./components/toast";
-import Toast from "react-native-toast-message";
 
 const logo = require("../assets/images/adria.jpg");
 
 export default function App() {
   const { user, userDB } = useLocalSearchParams();
-
   const [form, setForm] = useState<Form>({
     user: "",
     password: "",
@@ -28,9 +28,18 @@ export default function App() {
   const [isSubmiting, setIsSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<string>("");
 
   const passwordInputRef = useRef<TextInput>(null);
+  const usernameInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (userDB) {
+      setForm({ ...form, user: String(userDB) });
+      passwordInputRef.current && passwordInputRef.current.focus();
+    } else {
+      usernameInputRef.current && usernameInputRef.current.focus();
+    }
+  }, []);
 
   const handleLogin = async () => {
     setIsSubmitting(true);
@@ -58,7 +67,7 @@ export default function App() {
           });
           return;
         } else {
-          console.log("Login successful", data.result[0].displayname);
+          console.log("Login successful", form.user.toUpperCase());
           router.push({
             pathname: "/home",
             params: {
@@ -79,10 +88,10 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    setForm({ ...form, user: String(userDB) });
-    passwordInputRef.current && passwordInputRef.current.focus();
-  }, []);
+  // useEffect(() => {
+  //   setForm({ ...form, user: String(userDB) });
+  //   passwordInputRef.current && passwordInputRef.current.focus();
+  // }, []);
 
   // useEffect(() => {
   //   const timer = setTimeout(() => {
@@ -104,7 +113,7 @@ export default function App() {
             className="w-2/3 mx-auto h-9"
           />
           <Text className="text-2xl font-psemibold mt-5 text-center">
-            Invetura OS
+            Inventura OS
           </Text>
 
           {/* USER INPUT */}
@@ -114,13 +123,16 @@ export default function App() {
             </Text>
             <View className="w-full h-[50px] px-4 pl-6 bg-white border-2 border-slate-600 rounded-2xl focus:border-blue-70 flex-row items-center">
               <TextInput
+                ref={usernameInputRef}
                 className="flex-1 font-psemibold text-base"
                 value={form.user}
                 showSoftInputOnFocus={false}
                 clearTextOnFocus={true}
-                autoFocus={form.user === "" ? true : false}
+                // autoFocus={form.user === "" ? true : false}
                 placeholderTextColor={"#A1A1AA"}
-                onChangeText={(e: string) => setForm({ ...form, user: e })}
+                onChangeText={(e: string) => {
+                  setForm({ ...form, user: e });
+                }}
                 onSubmitEditing={() =>
                   passwordInputRef.current && passwordInputRef.current.focus()
                 }
@@ -146,7 +158,7 @@ export default function App() {
                 clearTextOnFocus={true}
                 placeholderTextColor={"#A1A1AA"}
                 onChangeText={(e: string) => setForm({ ...form, password: e })}
-                secureTextEntry={true}
+                secureTextEntry={!showPassword}
                 returnKeyType="go"
                 onSubmitEditing={handleLogin}
                 onFocus={() => {

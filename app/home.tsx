@@ -54,6 +54,7 @@ export default function home() {
   const [nazivi, setNazivi] = useState<NaziviResponse>([]);
   const [novaLokacija, setNovaLokacija] = useState<string | null>("");
   const [inuputLocationValue, setInputLocationValue] = useState<string>("");
+  const [disableBtn, setDisableBtn] = useState<boolean>(true);
 
   const [sendData, setSendData] = useState<sendParams>({
     stev: 0,
@@ -93,10 +94,10 @@ export default function home() {
         naziv_inv: dataOS?.naziv_inv ? dataOS?.naziv_inv : "",
       });
       setOldNumberOS(dataOS?.stev_old ? dataOS?.stev_old : 0);
-      setOldDataOS(undefined);
+      // setOldDataOS(undefined);
     } else {
       setNewNaziv("");
-      setOldDataOS(undefined);
+      // setOldDataOS(undefined);
       setNovaLokacija(null);
       setSendData({
         stev: numberOS,
@@ -112,10 +113,10 @@ export default function home() {
     handleGetNazivi();
   }, []);
 
-  useEffect(() => {
-    console.log(sendData);
-    console.log(oldDataOS);
-  }, [sendData]);
+  // useEffect(() => {
+  //   console.log(sendData);
+  //   console.log(oldDataOS);
+  // }, [sendData]);
 
   const handlePopisan = (choice: boolean) => {
     if (choice === true) {
@@ -237,6 +238,8 @@ export default function home() {
         setDataOS(null);
       } else {
         setDataOS(data.result);
+        lokacijaInputRef.current && lokacijaInputRef.current.focus();
+        setDisableBtn(false);
         if (data.result.stev_old !== null) {
           console.log("TESTETSDTTETS");
           try {
@@ -275,19 +278,26 @@ export default function home() {
           type: "success",
           text1: "Podatki uspešno poslani",
         });
-        numberOSInputRef.current && numberOSInputRef.current.focus();
+
         const successData = await getOSinfo(sendData.stev);
+        const successDataOld = await getOSinfo(sendData.stev_old);
         try {
           if (successData.result === null) {
             console.log("Številka ne obstaja");
             setDataOS(null);
           } else {
+            setDisableBtn(true);
             setDataOS(successData.result);
+            setOldDataOS(successDataOld.result);
             setSendData((prev) => ({
               ...prev,
+              naziv_inv: successData.result.osstanje_ime,
               lokacija: successData.result.lokacija_inv,
             }));
+            console.log(sendData.naziv_inv);
+            console.log(oldDataOS?.osstanje_ime);
           }
+          numberOSInputRef.current && numberOSInputRef.current.focus();
         } catch (error) {
           console.error("Login error", error);
         }
@@ -299,7 +309,6 @@ export default function home() {
 
   const potrditev = async () => {
     let testLocation = await locationCheck(Number(sendData.lokacija));
-
     if (testLocation === false) {
       showToast({
         type: "error",
@@ -308,19 +317,16 @@ export default function home() {
       });
       return;
     }
-
     if (dataOS?.popisan === "D") {
       setPopisanModal(true);
       return;
     }
-
     if (dataOS?.osstanje_ime === null && sendData.naziv_inv === "") {
       showToast({
         type: "error",
         text1: "NAPAKA",
         text2: "Vnesi naziv OS",
       });
-
       return;
     }
     if (newNaziv === "Naziv starega OS") {
@@ -366,7 +372,6 @@ export default function home() {
                 onSubmitEditing={() => {
                   setDisplayNumber(String(numberOS));
                   handleGetLastnik();
-                  lokacijaInputRef.current && lokacijaInputRef.current.focus();
                 }}
                 onFocus={() => setNumberOS(0)}
               />
@@ -418,9 +423,10 @@ export default function home() {
                       }
                     }}
                     onSubmitEditing={handleOldOS}
+                    editable={!disableBtn}
                   />
                 </View>
-                {oldDataOS?.osstanje_ime !== undefined && (
+                {oldDataOS?.osstanje_ime !== null && (
                   <>
                     <Text className="text-xs font-psemibold mt-1">
                       Stari naziv
@@ -440,7 +446,8 @@ export default function home() {
                 >
                   <Picker
                     selectedValue={
-                      sendData?.naziv_inv === oldDataOS?.osstanje_ime
+                      String(sendData.naziv_inv) ===
+                      String(oldDataOS?.osstanje_ime)
                         ? "Naziv starega OS"
                         : sendData?.naziv_inv
                     }
@@ -448,6 +455,7 @@ export default function home() {
                       handleNewNaziv(itemValue)
                     }
                     placeholder="Izberi naziv"
+                    enabled={!disableBtn}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -501,13 +509,19 @@ export default function home() {
                   onClose={() => {
                     setOldDataModal(false);
                   }}
+                  reject={() => {
+                    setOldNumberOS(0);
+                    setOldDataOS(undefined);
+                    setOldDataModal(false);
+                    oldNumberOSInptuRef.current &&
+                      oldNumberOSInptuRef.current.focus();
+                  }}
                 />
               </>
             )}
 
             {dataOS?.osstanje_ime !== null && (
               <>
-                {displayNubmer !== "" && <Text>{displayNubmer}</Text>}
                 <Text className="text-lg font-pmedium">
                   {dataOS?.osstanje_ime}
                 </Text>
@@ -539,6 +553,7 @@ export default function home() {
                 <TextInput
                   ref={lokacijaInputRef}
                   editable={dataOS !== null ? true : false}
+                  // editable={!disableBtn}
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
@@ -561,7 +576,8 @@ export default function home() {
                       lokacija: Number(dataOS?.lokacija),
                     })
                   }
-                  disabled={dataOS?.lokacija === null ? true : false}
+                  // disabled={dataOS?.lokacija === null ? true : false}
+                  disabled={disableBtn}
                 >
                   <Image
                     source={chevronLeft}
@@ -573,26 +589,31 @@ export default function home() {
               </View>
             </View>
             {dataOS?.popisan === "D" ? (
-              <Text className="text-sm font-pbold text-green-700 text-center mt-2 tracking-wider">
-                POPISANO
-              </Text>
+              <View className="flex flex-row justify-center items-center pt-2 gap-2">
+                <Text className="font-pregular text-sm">
+                  {displayNubmer !== "" ? displayNubmer : ""}
+                </Text>
+                <Text className="text-sm font-pbold text-green-700 text-center tracking-wider">
+                  POPISANO
+                </Text>
+              </View>
             ) : (
-              <Text className="text-sm font-pbold text-red-700 text-center mt-2 tracking-wider">
-                NEPOPISANO
-              </Text>
+              <View className="flex flex-row justify-center items-center pt-2 gap-2">
+                <Text className="font-pregular text-sm">
+                  {displayNubmer !== "" ? displayNubmer : ""}
+                </Text>
+                <Text className="text-sm font-pbold text-red-700 text-center tracking-wider">
+                  NEPOPISANO
+                </Text>
+              </View>
             )}
           </View>
           <CustomButton
             title="VNESI"
             handlePress={potrditev}
             containerStyles="bg-[#002d5f]"
-            disable={
-              dataOS === (null || undefined) ||
-              sendData.lokacija === 0 ||
-              sendData.lokacija === null
-                ? true
-                : false
-            }
+            // disable={dataOS === (null || undefined) ? true : false}
+            disable={disableBtn}
           />
           <PopisanModal visible={popisanModal} onChoice={handlePopisan} />
           <LogoffModal

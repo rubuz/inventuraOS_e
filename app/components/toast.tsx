@@ -1,3 +1,4 @@
+import { Text, View } from "react-native";
 import Toast, { ErrorToast } from "react-native-toast-message";
 import { ToastProps } from "react-native-toast-message";
 
@@ -26,12 +27,18 @@ export const toastConfig = {
       }}
       text2Style={{
         fontSize: 12,
+        flexWrap: "wrap",
+        maxWidth: "100%",
+        height: "auto",
       }}
       style={{
-        width: "95%",
+        display: "flex",
+        flexWrap: "wrap",
+        width: "97%",
         marginBottom: 20,
         borderRadius: 10,
-        height: 50,
+        height: "auto",
+        minHeight: 50,
         borderLeftColor: "#EF4444",
       }}
     />
@@ -44,12 +51,15 @@ export const toastConfig = {
       }}
       text2Style={{
         fontSize: 12,
+        flexWrap: "wrap",
+        maxWidth: "90%",
       }}
       style={{
-        width: "95%",
+        width: "97%",
         marginBottom: 20,
         borderRadius: 10,
-        height: 50,
+        height: "auto",
+        minHeight: 50,
         borderLeftColor: "#22c55e",
       }}
     />
