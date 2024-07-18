@@ -243,7 +243,7 @@ export default function home() {
         } else {
           lokacijaInputRef.current && lokacijaInputRef.current.focus();
         }
-
+        setOldDataOS(null);
         setDisableBtn(false);
         if (data.result.stev_old !== null) {
           console.log("TESTETSDTTETS");
@@ -253,6 +253,7 @@ export default function home() {
             );
             setOldNumberOS(data.result.stev_old);
             setOldDataOS(oldData.result);
+            console.log(oldDataOS);
           } catch (error) {
             console.error("Login error", error);
           }
@@ -299,8 +300,8 @@ export default function home() {
               naziv_inv: successData.result.osstanje_ime,
               lokacija: successData.result.lokacija_inv,
             }));
-            console.log(sendData.naziv_inv);
-            console.log(oldDataOS?.osstanje_ime);
+            // console.log(sendData.naziv_inv);
+            // console.log(oldDataOS?.osstanje_ime);
           }
           numberOSInputRef.current && numberOSInputRef.current.focus();
         } catch (error) {
@@ -318,8 +319,10 @@ export default function home() {
       showToast({
         type: "error",
         text1: "NAPAKA",
-        text2: "Lokacija ne obstaja",
+        text2: "Lokacija " + sendData.lokacija + " ne obstaja",
       });
+      lokacijaInputRef.current && lokacijaInputRef.current.focus();
+      lokacijaInputRef.current && lokacijaInputRef.current.clear();
       return;
     }
     if (dataOS?.popisan === "D") {
@@ -395,6 +398,13 @@ export default function home() {
               dataOS?.popisan === "D" ? "bg-green-200" : "bg-red-200"
             }`}
           >
+            {dataOS?.osstanje_ime !== null && (
+              <>
+                <Text className="text-lg font-pmedium text-center">
+                  {dataOS?.osstanje_ime}
+                </Text>
+              </>
+            )}
             {(dataOS?.osstanje_ime === null ||
               dataOS?.spec1 === "ODPRTO ZA POTREBE INVENTURE") && (
               <>
@@ -431,11 +441,10 @@ export default function home() {
                     editable={!disableBtn}
                   />
                 </View>
-                {oldDataOS?.osstanje_ime !== null && (
+                {oldDataOS?.osstanje_ime === null ? (
+                  <></>
+                ) : (
                   <>
-                    <Text className="text-xs font-psemibold mt-1">
-                      Stari naziv
-                    </Text>
                     <Text className="text-sm font-pmedium">
                       {oldDataOS?.osstanje_ime}
                     </Text>
@@ -524,14 +533,6 @@ export default function home() {
                 />
               </>
             )}
-
-            {dataOS?.osstanje_ime !== null && (
-              <>
-                <Text className="text-lg font-pmedium">
-                  {dataOS?.osstanje_ime}
-                </Text>
-              </>
-            )}
             <Text className="text-xs font-psemibold mt-1">Lastnik</Text>
             <View className="w-full flex flex-row justify-between">
               <Text className="font-pregular text-base max-w-[75%]">
@@ -570,6 +571,7 @@ export default function home() {
                       setSendData({ ...sendData, lokacija: Number(e) });
                     }
                   }}
+                  onSubmitEditing={potrditev}
                 />
                 <TouchableOpacity
                   className={`h-8 flex-row items-center justify-center ${
