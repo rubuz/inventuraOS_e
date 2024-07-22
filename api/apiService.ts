@@ -1,14 +1,14 @@
 import axios from "axios";
 import {
-  API_URL_LOGIN,
-  API_LOGIN_HEADER,
-  API_URL_GETLASTNIK,
-  API_URL_OBSTAJA_LOKACIJA,
-  API_URL_NAZIVI,
-  API_URL_POTRDILO,
-  API_DB_USERNAME,
-  API_DB_PASSWORD,
-  API_DB_ROLE,
+  EXPO_PUBLIC_API_URL_LOGIN,
+  EXPO_PUBLIC_API_LOGIN_HEADER,
+  EXPO_PUBLIC_API_URL_GETLASTNIK,
+  EXPO_PUBLIC_API_URL_OBSTAJA_LOKACIJA,
+  EXPO_PUBLIC_API_URL_NAZIVI,
+  EXPO_PUBLIC_API_URL_POTRDILO,
+  EXPO_PUBLIC_API_DB_USERNAME,
+  EXPO_PUBLIC_API_DB_PASSWORD,
+  EXPO_PUBLIC_API_DB_ROLE,
 } from "@env";
 
 type LoginParams = {
@@ -26,7 +26,7 @@ type potrdiloParams = {
 export const login = async ({ user, password }: LoginParams) => {
   try {
     const response = await axios.post(
-      API_URL_LOGIN,
+      EXPO_PUBLIC_API_URL_LOGIN,
       {
         parameters: {
           username: user,
@@ -35,7 +35,7 @@ export const login = async ({ user, password }: LoginParams) => {
       },
       {
         headers: {
-          Authorization: API_LOGIN_HEADER,
+          Authorization: EXPO_PUBLIC_API_LOGIN_HEADER,
         },
       }
     );
@@ -49,7 +49,7 @@ export const login = async ({ user, password }: LoginParams) => {
 export const getOSinfo = async (numberos: number) => {
   try {
     const response = await axios.post(
-      API_URL_GETLASTNIK,
+      EXPO_PUBLIC_API_URL_GETLASTNIK,
       {
         parameters: {
           stev: numberos,
@@ -57,7 +57,7 @@ export const getOSinfo = async (numberos: number) => {
       },
       {
         headers: {
-          Authorization: API_LOGIN_HEADER,
+          Authorization: EXPO_PUBLIC_API_LOGIN_HEADER,
         },
       }
     );
@@ -71,7 +71,7 @@ export const getOSinfo = async (numberos: number) => {
 export const checkLocation = async (location: number) => {
   try {
     const response = await axios.post(
-      API_URL_OBSTAJA_LOKACIJA,
+      EXPO_PUBLIC_API_URL_OBSTAJA_LOKACIJA,
       {
         parameters: {
           stev: location,
@@ -79,7 +79,7 @@ export const checkLocation = async (location: number) => {
       },
       {
         headers: {
-          Authorization: API_LOGIN_HEADER,
+          Authorization: EXPO_PUBLIC_API_LOGIN_HEADER,
         },
       }
     );
@@ -93,18 +93,18 @@ export const checkLocation = async (location: number) => {
 export const getNazivi = async () => {
   try {
     const response = await axios.post(
-      API_URL_NAZIVI,
+      EXPO_PUBLIC_API_URL_NAZIVI,
       {
         connStr: {
-          db_username: API_DB_USERNAME,
-          db_password: API_DB_PASSWORD,
-          db_ROLE: API_DB_ROLE,
+          db_username: EXPO_PUBLIC_API_DB_USERNAME,
+          db_password: EXPO_PUBLIC_API_DB_PASSWORD,
+          db_ROLE: EXPO_PUBLIC_API_DB_ROLE,
           test: true,
         },
       },
       {
         headers: {
-          Authorization: API_LOGIN_HEADER,
+          Authorization: EXPO_PUBLIC_API_LOGIN_HEADER,
         },
       }
     );
@@ -123,7 +123,7 @@ export const potrdilo = async ({
 }: potrdiloParams) => {
   try {
     const response = await axios.post(
-      API_URL_POTRDILO,
+      EXPO_PUBLIC_API_URL_POTRDILO,
       {
         parameters: {
           stev: stev,
@@ -134,7 +134,7 @@ export const potrdilo = async ({
       },
       {
         headers: {
-          Authorization: API_LOGIN_HEADER,
+          Authorization: EXPO_PUBLIC_API_LOGIN_HEADER,
         },
       }
     );
