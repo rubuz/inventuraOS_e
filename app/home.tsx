@@ -113,10 +113,10 @@ export default function home() {
     handleGetNazivi();
   }, []);
 
-  useEffect(() => {
-    console.log(sendData);
-    console.log(oldDataOS);
-  }, [sendData]);
+  // useEffect(() => {
+  //   console.log(sendData);
+  //   console.log(oldDataOS);
+  // }, [sendData]);
 
   const handlePopisan = (choice: boolean) => {
     if (choice === true) {
