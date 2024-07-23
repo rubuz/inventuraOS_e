@@ -113,10 +113,10 @@ export default function home() {
     handleGetNazivi();
   }, []);
 
-  // useEffect(() => {
-  //   console.log(sendData);
-  //   console.log(oldDataOS);
-  // }, [sendData]);
+  useEffect(() => {
+    console.log(sendData);
+    console.log(oldDataOS);
+  }, [sendData]);
 
   const handlePopisan = (choice: boolean) => {
     if (choice === true) {
@@ -314,6 +314,16 @@ export default function home() {
   };
 
   const potrditev = async () => {
+    if (sendData.lokacija === 0) {
+      showToast({
+        type: "error",
+        text1: "NAPAKA",
+        text2: "Vnesi lokacijo",
+      });
+      lokacijaInputRef.current && lokacijaInputRef.current.focus();
+      lokacijaInputRef.current && lokacijaInputRef.current.clear();
+      return;
+    }
     let testLocation = await locationCheck(Number(sendData.lokacija));
     if (testLocation === false) {
       showToast({
@@ -400,7 +410,7 @@ export default function home() {
           >
             {dataOS?.osstanje_ime !== null && (
               <>
-                <Text className="text-lg font-pmedium text-center">
+                <Text className="text-lg font-pmedium text-centern">
                   {dataOS?.osstanje_ime}
                 </Text>
               </>
@@ -563,9 +573,7 @@ export default function home() {
                   className="font-pregular flex h-full w-full items-center"
                   keyboardType="numeric"
                   showSoftInputOnFocus={false}
-                  value={
-                    sendData.lokacija === 0 ? "" : String(sendData.lokacija)
-                  }
+                  value={String(sendData.lokacija)}
                   onChangeText={(e) => {
                     if (/^\d*$/.test(e) || e === "") {
                       setSendData({ ...sendData, lokacija: Number(e) });
