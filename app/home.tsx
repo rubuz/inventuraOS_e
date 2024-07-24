@@ -29,6 +29,7 @@ import OldOSModal from "./components/OldOSModal";
 import PopisanModal from "./components/PopisanModal";
 import LogoffModal from "./components/LogoffModal";
 import { showToast, toastConfig } from "./components/toast";
+import Skeleton from "./components/Skeleton";
 
 const chevronLeft = require("../assets/images/chevron-left.png");
 
@@ -66,7 +67,7 @@ export default function home() {
   const [popisanModal, setPopisanModal] = useState<boolean>(false);
   const [logoffModal, setLogoffModal] = useState<boolean>(false);
   const [sendAgain, setSendAgain] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const lokacijaInputRef = useRef<TextInput>(null);
   const numberOSInputRef = useRef<TextInput>(null);
@@ -231,6 +232,7 @@ export default function home() {
   // }, [dataOS]);
 
   const handleGetLastnik = async () => {
+    setIsLoading(true);
     try {
       const data: LastnikOSResponse = await getOSinfo(numberOS);
       if (data.result === null) {
@@ -239,33 +241,51 @@ export default function home() {
         setDataOS(null);
       } else {
         setDataOS(data.result);
-        if (data.result.popisan === "D") {
-          numberOSInputRef.current && numberOSInputRef.current.focus();
-        } else {
-          lokacijaInputRef.current && lokacijaInputRef.current.focus();
-        }
+        focusInputBasedOnData(data.result.popisan);
         setOldDataOS(null);
         setDisableBtn(false);
         if (data.result.stev_old !== null) {
-          console.log("TESTETSDTTETS");
-          try {
-            const oldData: LastnikOSResponse = await getOSinfo(
-              data.result.stev_old
-            );
-            setOldNumberOS(data.result.stev_old);
-            setOldDataOS(oldData.result);
-            console.log(oldDataOS);
-          } catch (error) {
-            console.error("Login error", error);
-          }
+          await fetchAndSetOldData(data.result.stev_old);
+          // console.log("TESTETSDTTETS");
+          // try {
+          //   const oldData: LastnikOSResponse = await getOSinfo(
+          //     data.result.stev_old
+          //   );
+          //   setOldNumberOS(data.result.stev_old);
+          //   setOldDataOS(oldData.result);
+          //   console.log(oldDataOS);
+          // } catch (error) {
+          //   console.error("Login error", error);
+          // }
         }
       }
     } catch (error) {
       console.error("Napaka pri povezavzi", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const focusInputBasedOnData = (data: string) => {
+    if (data === "D") {
+      numberOSInputRef.current && numberOSInputRef.current.focus();
+    } else {
+      lokacijaInputRef.current && lokacijaInputRef.current.focus();
+    }
+  };
+
+  const fetchAndSetOldData = async (oldNumber: number) => {
+    try {
+      const oldData: LastnikOSResponse = await getOSinfo(oldNumber);
+      setOldNumberOS(oldNumber);
+      setOldDataOS(oldData.result);
+    } catch (error) {
+      console.error("Network error", error);
     }
   };
 
   const sendingData = async () => {
+    setIsLoading(true);
     try {
       const data: PotrdiloResponse = await potrdilo(sendData);
       if (data.error.error === true) {
@@ -311,6 +331,8 @@ export default function home() {
       }
     } catch (error) {
       console.error("Sending data error", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -404,232 +426,242 @@ export default function home() {
           )}
 
           {/* NOV NAČIN */}
-          <View
-            className={`p-2 my-1 rounded-2xl ${
-              dataOS?.popisan === "D" ? "bg-green-200" : "bg-red-200"
-            }`}
-          >
-            {dataOS?.osstanje_ime !== null && (
-              <>
-                <Text className="text-lg font-pmedium text-centern">
-                  {dataOS?.osstanje_ime}
-                </Text>
-              </>
-            )}
-            {(dataOS?.osstanje_ime === null ||
-              dataOS?.spec1 === "ODPRTO ZA POTREBE INVENTURE") && (
-              <>
-                {/* <Text className="text-center mb-2 text-base font-psemibold">
+          {isLoading ? (
+            <View className="bg-slate-200 rounded-2xl p-2 my-1">
+              <Skeleton />
+            </View>
+          ) : (
+            <View
+              className={`p-2 my-1 rounded-2xl ${
+                dataOS?.popisan === "D" ? "bg-green-200" : "bg-red-200"
+              }`}
+            >
+              {dataOS?.osstanje_ime !== null && (
+                <>
+                  <Text className="text-lg font-pmedium text-centern">
+                    {dataOS?.osstanje_ime}
+                  </Text>
+                </>
+              )}
+              {(dataOS?.osstanje_ime === null ||
+                dataOS?.spec1 === "ODPRTO ZA POTREBE INVENTURE") && (
+                <>
+                  {/* <Text className="text-center mb-2 text-base font-psemibold">
               Osnovno sredstvo nima naziva
             </Text> */}
-                <Text className="text-xs font-psemibold mt-0">
-                  Stara številka OS
+                  <Text className="text-xs font-psemibold mt-0">
+                    Stara številka OS
+                  </Text>
+                  <View
+                    className={`w-full h-8 rounded-xl border-[1px] font-pregular flex-col items-center justify-center ${
+                      dataOS?.popisan === "D"
+                        ? "border-green-300 bg-green-100 focus:border-green-500"
+                        : "border-red-300 bg-red-100 focus:border-red-500"
+                    }`}
+                  >
+                    <TextInput
+                      className="text-sm w-full flex-col h-full items-center justify-center font-pregular ml-4"
+                      keyboardType="numeric"
+                      // placeholder={
+                      //   dataOS?.stev_old
+                      //     ? String(dataOS?.stev_old)
+                      //     : "Vnesi številko starega OS"
+                      // }
+                      showSoftInputOnFocus={false}
+                      value={oldNumberOS === 0 ? "" : String(oldNumberOS)}
+                      ref={oldNumberOSInptuRef}
+                      onChangeText={(e) => {
+                        if (/^\d*$/.test(e) || e === "") {
+                          setOldNumberOS(e === "" ? 0 : Number(e));
+                        }
+                      }}
+                      onSubmitEditing={handleOldOS}
+                      editable={!disableBtn}
+                    />
+                  </View>
+                  {oldDataOS?.osstanje_ime === null ? (
+                    <></>
+                  ) : (
+                    <>
+                      <Text className="text-sm font-pmedium">
+                        {oldDataOS?.osstanje_ime}
+                      </Text>
+                    </>
+                  )}
+                  <Text className="text-xs font-psemibold mt-1">Nov naziv</Text>
+                  <View
+                    className={`w-full h-8 rounded-xl border-[1px] font-pregular flex-col items-center justify-center ${
+                      dataOS?.popisan === "D"
+                        ? "border-green-300 bg-green-100 focus:border-green-500"
+                        : "border-red-300 bg-red-100 focus:border-red-500"
+                    }`}
+                  >
+                    <Picker
+                      selectedValue={
+                        String(sendData.naziv_inv) ===
+                        String(oldDataOS?.osstanje_ime)
+                          ? "Naziv starega OS"
+                          : sendData?.naziv_inv
+                      }
+                      onValueChange={(itemValue, itemIndex) =>
+                        handleNewNaziv(itemValue)
+                      }
+                      placeholder="Izberi naziv"
+                      enabled={!disableBtn}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        marginLeft: -15,
+                      }}
+                    >
+                      <Picker.Item
+                        label=""
+                        value=""
+                        fontFamily="Popins-Regular"
+                        style={{
+                          fontFamily: "Poppins-Regular",
+                          fontWeight: "bold",
+                          fontSize: 14,
+                        }}
+                      />
+                      {oldDataOS && (
+                        <Picker.Item
+                          label="Naziv starega OS"
+                          value="Naziv starega OS"
+                          fontFamily="Popins-Regular"
+                          enabled={
+                            oldDataOS?.osstanje_ime !== undefined ? true : false
+                          }
+                          style={{
+                            fontFamily: "Poppins-Regular",
+                            fontWeight: "bold",
+                            fontSize: 14,
+                          }}
+                        />
+                      )}
+                      {nazivi.slice(2).map((naziv, index) => (
+                        <Picker.Item
+                          label={naziv.naziv}
+                          value={naziv.naziv}
+                          key={index}
+                          fontFamily="Popins-Regular"
+                          style={{
+                            fontFamily: "Poppins-Regular",
+                            fontWeight: "bold",
+                            fontSize: 14,
+                          }}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+
+                  <OldOSModal
+                    visible={oldDataModal}
+                    oldDataOS={oldDataOS}
+                    onClose={() => {
+                      setOldDataModal(false);
+                    }}
+                    reject={() => {
+                      setOldNumberOS(0);
+                      setOldDataOS(undefined);
+                      setOldDataModal(false);
+                      oldNumberOSInptuRef.current &&
+                        oldNumberOSInptuRef.current.focus();
+                    }}
+                  />
+                </>
+              )}
+              <Text className="text-xs font-psemibold mt-1">Lastnik</Text>
+              <View className="w-full flex flex-row justify-between">
+                <Text className="font-pregular text-base max-w-[75%]">
+                  {dataOS?.ime}
+                </Text>
+                <Text>{dataOS?.sifra}</Text>
+              </View>
+              <Text className="text-xs mt-1 font-psemibold">Lokacija</Text>
+              <View className="w-full flex flex-row justify-between">
+                <Text className="font-pregular text-base">
+                  {!dataOS?.lokacija ? "" : dataOS?.lokacija}
+                </Text>
+                <Text>{dataOS?.obrat_ime}</Text>
+              </View>
+              <View className="mt-1 w-full relative">
+                <Text className="mb-1 font-psemibold text-xs">
+                  Nova lokacija
                 </Text>
                 <View
-                  className={`w-full h-8 rounded-xl border-[1px] font-pregular flex-col items-center justify-center ${
+                  className={`w-full h-8 border-[1px] rounded-xl flex-row items-center justify-between pl-2 relative ${
                     dataOS?.popisan === "D"
                       ? "border-green-300 bg-green-100 focus:border-green-500"
                       : "border-red-300 bg-red-100 focus:border-red-500"
                   }`}
                 >
                   <TextInput
-                    className="text-sm w-full flex-col h-full items-center justify-center font-pregular ml-4"
+                    ref={lokacijaInputRef}
+                    editable={dataOS !== null ? true : false}
+                    // editable={!disableBtn}
+                    className="font-pregular flex h-full w-full items-center"
                     keyboardType="numeric"
-                    // placeholder={
-                    //   dataOS?.stev_old
-                    //     ? String(dataOS?.stev_old)
-                    //     : "Vnesi številko starega OS"
-                    // }
                     showSoftInputOnFocus={false}
-                    value={oldNumberOS === 0 ? "" : String(oldNumberOS)}
-                    ref={oldNumberOSInptuRef}
+                    value={String(sendData.lokacija)}
                     onChangeText={(e) => {
                       if (/^\d*$/.test(e) || e === "") {
-                        setOldNumberOS(e === "" ? 0 : Number(e));
+                        setSendData({ ...sendData, lokacija: Number(e) });
                       }
                     }}
-                    onSubmitEditing={handleOldOS}
-                    editable={!disableBtn}
+                    onSubmitEditing={potrditev}
                   />
-                </View>
-                {oldDataOS?.osstanje_ime === null ? (
-                  <></>
-                ) : (
-                  <>
-                    <Text className="text-sm font-pmedium">
-                      {oldDataOS?.osstanje_ime}
-                    </Text>
-                  </>
-                )}
-                <Text className="text-xs font-psemibold mt-1">Nov naziv</Text>
-                <View
-                  className={`w-full h-8 rounded-xl border-[1px] font-pregular flex-col items-center justify-center ${
-                    dataOS?.popisan === "D"
-                      ? "border-green-300 bg-green-100 focus:border-green-500"
-                      : "border-red-300 bg-red-100 focus:border-red-500"
-                  }`}
-                >
-                  <Picker
-                    selectedValue={
-                      String(sendData.naziv_inv) ===
-                      String(oldDataOS?.osstanje_ime)
-                        ? "Naziv starega OS"
-                        : sendData?.naziv_inv
+                  <TouchableOpacity
+                    className={`h-8 flex-row items-center justify-center ${
+                      dataOS?.popisan === "D" ? "bg-green-300" : "bg-red-300"
+                    } rounded-[10px] px-2 absolute -right-[1px] z-10`}
+                    onPress={() =>
+                      setSendData({
+                        ...sendData,
+                        lokacija: Number(dataOS?.lokacija),
+                      })
                     }
-                    onValueChange={(itemValue, itemIndex) =>
-                      handleNewNaziv(itemValue)
-                    }
-                    placeholder="Izberi naziv"
-                    enabled={!disableBtn}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      marginLeft: -15,
-                    }}
+                    // disabled={dataOS?.lokacija === null ? true : false}
+                    disabled={disableBtn}
                   >
-                    <Picker.Item
-                      label=""
-                      value=""
-                      fontFamily="Popins-Regular"
-                      style={{
-                        fontFamily: "Poppins-Regular",
-                        fontWeight: "bold",
-                        fontSize: 14,
-                      }}
+                    <Image
+                      source={chevronLeft}
+                      resizeMode="contain"
+                      className="h-3 w-3 pr-6"
                     />
-                    {oldDataOS && (
-                      <Picker.Item
-                        label="Naziv starega OS"
-                        value="Naziv starega OS"
-                        fontFamily="Popins-Regular"
-                        enabled={
-                          oldDataOS?.osstanje_ime !== undefined ? true : false
-                        }
-                        style={{
-                          fontFamily: "Poppins-Regular",
-                          fontWeight: "bold",
-                          fontSize: 14,
-                        }}
-                      />
-                    )}
-                    {nazivi.slice(2).map((naziv, index) => (
-                      <Picker.Item
-                        label={naziv.naziv}
-                        value={naziv.naziv}
-                        key={index}
-                        fontFamily="Popins-Regular"
-                        style={{
-                          fontFamily: "Poppins-Regular",
-                          fontWeight: "bold",
-                          fontSize: 14,
-                        }}
-                      />
-                    ))}
-                  </Picker>
+                    <Text className="text-xs font-pregular">Kopiraj staro</Text>
+                  </TouchableOpacity>
                 </View>
+              </View>
+              {dataOS?.popisan === "D" ? (
+                <View className="flex flex-row justify-center items-center pt-2 gap-2">
+                  <Text className="font-pregular text-sm">
+                    {displayNubmer !== "" ? displayNubmer : ""}
+                  </Text>
+                  <Text className="text-sm font-pbold text-green-700 text-center tracking-wider">
+                    POPISANO
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex flex-row justify-center items-center pt-2 gap-2">
+                  <Text className="font-pregular text-sm">
+                    {displayNubmer !== "" ? displayNubmer : ""}
+                  </Text>
+                  <Text className="text-sm font-pbold text-red-700 text-center tracking-wider">
+                    NEPOPISANO
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
-                <OldOSModal
-                  visible={oldDataModal}
-                  oldDataOS={oldDataOS}
-                  onClose={() => {
-                    setOldDataModal(false);
-                  }}
-                  reject={() => {
-                    setOldNumberOS(0);
-                    setOldDataOS(undefined);
-                    setOldDataModal(false);
-                    oldNumberOSInptuRef.current &&
-                      oldNumberOSInptuRef.current.focus();
-                  }}
-                />
-              </>
-            )}
-            <Text className="text-xs font-psemibold mt-1">Lastnik</Text>
-            <View className="w-full flex flex-row justify-between">
-              <Text className="font-pregular text-base max-w-[75%]">
-                {dataOS?.ime}
-              </Text>
-              <Text>{dataOS?.sifra}</Text>
-            </View>
-            <Text className="text-xs mt-1 font-psemibold">Lokacija</Text>
-            <View className="w-full flex flex-row justify-between">
-              <Text className="font-pregular text-base">
-                {!dataOS?.lokacija ? "" : dataOS?.lokacija}
-              </Text>
-              <Text>{dataOS?.obrat_ime}</Text>
-            </View>
-            <View className="mt-1 w-full relative">
-              <Text className="mb-1 font-psemibold text-xs">Nova lokacija</Text>
-              <View
-                className={`w-full h-8 border-[1px] rounded-xl flex-row items-center justify-between pl-2 relative ${
-                  dataOS?.popisan === "D"
-                    ? "border-green-300 bg-green-100 focus:border-green-500"
-                    : "border-red-300 bg-red-100 focus:border-red-500"
-                }`}
-              >
-                <TextInput
-                  ref={lokacijaInputRef}
-                  editable={dataOS !== null ? true : false}
-                  // editable={!disableBtn}
-                  className="font-pregular flex h-full w-full items-center"
-                  keyboardType="numeric"
-                  showSoftInputOnFocus={false}
-                  value={String(sendData.lokacija)}
-                  onChangeText={(e) => {
-                    if (/^\d*$/.test(e) || e === "") {
-                      setSendData({ ...sendData, lokacija: Number(e) });
-                    }
-                  }}
-                  onSubmitEditing={potrditev}
-                />
-                <TouchableOpacity
-                  className={`h-8 flex-row items-center justify-center ${
-                    dataOS?.popisan === "D" ? "bg-green-300" : "bg-red-300"
-                  } rounded-[10px] px-2 absolute -right-[1px] z-10`}
-                  onPress={() =>
-                    setSendData({
-                      ...sendData,
-                      lokacija: Number(dataOS?.lokacija),
-                    })
-                  }
-                  // disabled={dataOS?.lokacija === null ? true : false}
-                  disabled={disableBtn}
-                >
-                  <Image
-                    source={chevronLeft}
-                    resizeMode="contain"
-                    className="h-3 w-3 pr-6"
-                  />
-                  <Text className="text-xs font-pregular">Kopiraj staro</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            {dataOS?.popisan === "D" ? (
-              <View className="flex flex-row justify-center items-center pt-2 gap-2">
-                <Text className="font-pregular text-sm">
-                  {displayNubmer !== "" ? displayNubmer : ""}
-                </Text>
-                <Text className="text-sm font-pbold text-green-700 text-center tracking-wider">
-                  POPISANO
-                </Text>
-              </View>
-            ) : (
-              <View className="flex flex-row justify-center items-center pt-2 gap-2">
-                <Text className="font-pregular text-sm">
-                  {displayNubmer !== "" ? displayNubmer : ""}
-                </Text>
-                <Text className="text-sm font-pbold text-red-700 text-center tracking-wider">
-                  NEPOPISANO
-                </Text>
-              </View>
-            )}
-          </View>
           <CustomButton
             title="VNESI"
             handlePress={potrditev}
             containerStyles="bg-[#002d5f]"
             // disable={dataOS === (null || undefined) ? true : false}
             disable={disableBtn}
+            isLoading={isLoading}
           />
           <PopisanModal visible={popisanModal} onChoice={handlePopisan} />
           <LogoffModal
