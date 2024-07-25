@@ -307,7 +307,6 @@ export default function home() {
   };
 
   const sendingData = async () => {
-    setIsLoading(true);
     try {
       const data: PotrdiloResponse = await potrdilo(sendData);
       if (data.error.error === true) {
