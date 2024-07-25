@@ -46,7 +46,7 @@ export default function home() {
   const [dataOS, setDataOS] = useState<LastnikOSResult | null | undefined>(
     undefined
   );
-  const [oldNumberOS, setOldNumberOS] = useState(0);
+  const [oldNumberOS, setOldNumberOS] = useState<number>(0);
   const [oldDataOS, setOldDataOS] = useState<
     LastnikOSResult | null | undefined
   >(undefined);
@@ -113,7 +113,7 @@ export default function home() {
 
   useEffect(() => {
     handleGetNazivi();
-  }, [dataOS]);
+  }, []);
 
   // useEffect(() => {
   //   console.log(sendData);
@@ -161,6 +161,11 @@ export default function home() {
       setNazivi(dataNazivi.result);
     } catch (error) {
       console.error("Get nazivi error", error);
+      showToast({
+        type: "error",
+        text1: "NAPAKA",
+        text2: "API Naziv: " + error,
+      });
     }
   };
 
@@ -193,7 +198,12 @@ export default function home() {
         }
       }
     } catch (error) {
-      console.error("Login error", error);
+      console.error("GetLastnikOld error", error);
+      showToast({
+        type: "error",
+        text1: "NAPAKA",
+        text2: "API GetLastnikOld: " + error,
+      });
     }
   };
 
@@ -217,9 +227,11 @@ export default function home() {
       const data = await checkLocation(location);
       return data.result.value;
     } catch (error) {
+      console.error("Location check error", error);
       showToast({
         type: "error",
-        text1: "Napaka pri preverjanju lokacije",
+        text1: "NAPAKA",
+        text2: "API Lokacija: " + error,
       });
     }
   };
@@ -260,7 +272,12 @@ export default function home() {
         }
       }
     } catch (error) {
-      console.error("Napaka pri povezavzi", error);
+      console.error("GetLastnik error", error);
+      showToast({
+        type: "error",
+        text1: "NAPAKA",
+        text2: "API GetLastnik: " + error,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -280,7 +297,12 @@ export default function home() {
       setOldNumberOS(oldNumber);
       setOldDataOS(oldData.result);
     } catch (error) {
-      console.error("Network error", error);
+      console.error("GetLastnikOld2 error", error);
+      showToast({
+        type: "error",
+        text1: "NAPAKA",
+        text2: "API GetLastnikOld2: " + error,
+      });
     }
   };
 
@@ -326,11 +348,21 @@ export default function home() {
           }
           numberOSInputRef.current && numberOSInputRef.current.focus();
         } catch (error) {
-          console.error("Login error", error);
+          console.error("Send-GetLastnik error", error);
+          showToast({
+            type: "error",
+            text1: "NAPAKA",
+            text2: "API Send-GetLastnik: " + error,
+          });
         }
       }
     } catch (error) {
-      console.error("Sending data error", error);
+      console.error("Sending error", error);
+      showToast({
+        type: "error",
+        text1: "NAPAKA",
+        text2: "API Send: " + error,
+      });
     } finally {
       setIsLoading(false);
     }
