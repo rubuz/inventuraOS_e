@@ -67,7 +67,7 @@ export default function home() {
   const [popisanModal, setPopisanModal] = useState<boolean>(false);
   const [logoffModal, setLogoffModal] = useState<boolean>(false);
   const [sendAgain, setSendAgain] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const lokacijaInputRef = useRef<TextInput>(null);
   const numberOSInputRef = useRef<TextInput>(null);

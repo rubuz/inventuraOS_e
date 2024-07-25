@@ -10,7 +10,7 @@ const Skeleton = () => {
         height={200}
         viewBox="0 0 500 200"
         backgroundColor="#f3f3f3"
-        foregroundColor="#cccccc"
+        foregroundColor="#d4d4d4"
       >
         <Rect x="45" y="10" rx="10" ry="10" width="200" height="20" />
 
@@ -22,7 +22,7 @@ const Skeleton = () => {
 
         <Rect x="15" y="135" rx="10" ry="10" width="150" height="15" />
 
-        <Rect x="65" y="170" rx="10" ry="10" width="170" height="15" />
+        <Rect x="60" y="170" rx="10" ry="10" width="170" height="15" />
       </ContentLoader>
     </>
   );
