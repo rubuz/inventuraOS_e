@@ -88,20 +88,20 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    setForm({ ...form, user: String(userDB) });
-    passwordInputRef.current && passwordInputRef.current.focus();
-  }, []);
+  // useEffect(() => {
+  //   setForm({ ...form, user: String(userDB) });
+  //   passwordInputRef.current && passwordInputRef.current.focus();
+  // }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push({
-        pathname: "/home",
-      });
-    }, 500); // 500 milliseconds = 0.5 seconds
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     router.push({
+  //       pathname: "/home",
+  //     });
+  //   }, 500); // 500 milliseconds = 0.5 seconds
 
-    return () => clearTimeout(timer); // Cleanup the timer
-  }, []);
+  //   return () => clearTimeout(timer); // Cleanup the timer
+  // }, []);
 
   return (
     <SafeAreaView className="bg-white h-full">
